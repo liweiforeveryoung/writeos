@@ -1,7 +1,9 @@
 ; hello-os
 ; TAB=4
+ORG     0x7c00      ; 指明程序的装载地址，ORG 把程序装载到内存中的指定位置，为何是 0x7c00，见内存分布图
 ; 以下这段是标准FAT12格式软盘专用的代码
-DB  0xeb,0x4e,0x90
+JMP     entry
+DB      0x90
 DB  "HELLOIPL"  ; 启动区的名字可以使任意的字符串
 DW  512     ; define word 每个扇区（sector）的大小（必须是512字节）
 DB  1       ; 簇（cluster）的大小（必须为1个扇区）
@@ -21,20 +23,45 @@ DB  "HELLO-OS   "   ; 磁盘的名称 (11 字节）
 DB  "FAT12   "      ; 磁盘格式名称（8 字节）
 RESB    18              ; 先空出 18 字节
 ;程序主体
-DB  0xb8, 0x00, 0x00, 0x8e, 0xd0, 0xbc, 0x00, 0x7c
-DB  0x8e, 0xd8, 0x8e, 0xc0, 0xbe, 0x74, 0x7c, 0x8a
-DB  0x04, 0x83, 0xc6, 0x01, 0x3c, 0x00, 0x74, 0x09
-DB  0xb4, 0x0e, 0xbb, 0x0f, 0x00, 0xcd, 0x10, 0xeb
-DB  0xee, 0xf4, 0xeb, 0xfd
+entry:
+    MOV AX,0
+    MOV SS,AX
+    MOV SP,0x7c00   ; 注意程序开头的 ORG 0x7c00
+    MOV DS,AX
+    MOV ES,AX
+    MOV SI,msg
+putloop:
+    MOV AL,[SI]
+    ADD SI,1
+    CMP AL,0        ; 注意第 51 行，字符串的最后一个字符是 0
+
+    JE fin
+    MOV AH,0x0e     ; 显示一个文字
+    MOV BX,15       ; 指定字符颜色
+    INT 0x10        ; 调用终端
+    JMP putloop
+fin:
+    HLT             ; halt , HLT是让CPU停止动作的指令，不过并不是彻底地停止（如果要彻底停止CPU的动作，只能切断电源），而是让CPU进入待机状态。只要外部发生变化，比如按下键盘，或是移动鼠标，CPU就会醒过来，继续执行程序。
+    JMP fin
+msg:
 ; 信息显示部分
 DB  0x0a, 0x0a		; 2个换行
 DB  "hello, world"
 DB  0x0a			; 换行
 DB  0
-RESB    0x1fe-$		; 填写 0x00,知道 0x001fe，$ 表示这一行现在的字节数
+RESB    0x7dfe-$		; 填写 0x00,知道 0x7dfe，$ 表示这一行现在的字节数
 DB  0x55, 0xaa
 ; 以下是启动区以外部分的输出
 DB  0xf0, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00
 RESB    4600
 DB  0xf0, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00
 RESB    1469432
+
+
+; INT 10 中断调用
+; 显示一个字符A
+; H=0x0e;
+; AL=character code
+; BH=0
+; BL=color code
+;返回值：无
