@@ -2,7 +2,13 @@
 
 #### 一些魔数
 
+###### 0x7c00
+
+启动区（boot sector）的装载地址
+
 #### 内存布局
+
+内存的0号地址，也就是最开始的部分，是BIOS程序用来实现各种不同功能的地方，如果我们随便使用的话，就会与BIOS发生冲突，结果不只是BIOS会出错，而且我们的程序也肯定会问题百出。另外，在内存的0xf0000号地址附近，还存放着BIOS程序本身，那里我们也不能使用。
 
 ##### 第一天
 
@@ -23,3 +29,55 @@ initial program loader的缩写。启动程序加载器。启动区只有区区5
 ###### 启动（boot）
 
 boot这个词本是长靴（boots）的单数形式。它与计算机的启动有什么关系呢？一般应该将启动称为start的。实际上，boot这个词是bootstrap的缩写，原指靴子上附带的便于拿取的靴带。但自从有了《吹牛大王历险记》（德国）这个故事以后，bootstrap这个词就有了“自力更生完成任务”这种意思。而且，磁盘上明明装有操作系统，还要说读入操作系统的程序（即IPL）也放在磁盘里，这就像打开宝物箱的钥匙就在宝物箱里一样，是一种矛盾的说法。这种矛盾的操作系统自动启动机制，被称为bootstrap方式。boot这个说法就来源于此。如果是笔者来命名的话，肯定不会用bootstrap 这么奇怪的名字，笔者大概会叫它“多级火箭式”吧。
+
+##### 第二天
+
+**一些寄存器**：
+
+AX——accumulator，累加寄存器
+
+CX——counter，计数寄存器
+
+DX——data，数据寄存器
+
+BX——base，基址寄存器
+
+SP——stack pointer，栈指针寄存器
+
+BP——base pointer，基址指针寄存器
+
+SI——source index，源变址寄存器
+
+DI——destination index，目的变址寄存器
+
+上面的寄存器就是 16 位的 
+
+BP、SP、SI、DI没分为“L”和“H”。
+
+[SI]可以用寄存器来制定内存地址，但可作此用途的寄存器非常有限，只有BX、BP、SI、DI这几个。剩下的AX、CX、DX、SP不能用来指定内存地址。所以想把DX内存里的内容赋值给AL的时候，就会这样写：
+
+```assembly
+mov BX,DX
+mov AL,[BX]
+```
+
+###### BIOS
+
+电脑里有个名为BIOS的程序，出厂时就组装在电脑主板上的ROM2单元里。电脑厂家在BIOS中预先写入了操作系统开发人员经常会用到的一些程序，非常方便。BIOS是英文“basic  input  output  system”的缩写，直译过来就是“基本输入输出系统（程序）”只读存储器，不能写入，切断电源以后内容不会消失。ROM是“read only memory”的缩写。
+
+###### 内存分布图
+
+https://wiki.osdev.org/index.php?title=Memory_Map_%28x86%29&oldid=13415
+
+| start                         | end        | size                                          | type                                 | description                            |
+| ----------------------------- | ---------- | --------------------------------------------- | ------------------------------------ | -------------------------------------- |
+| Low Memory (the first MiB)    |            |                                               |                                      |                                        |
+| 0x00000000                    | 0x000003FF | 1 KiB                                         | RAM - partially unusable (see above) | Real Mode IVT (Interrupt Vector Table) |
+| 0x00000400                    | 0x000004FF | 256 bytes                                     | RAM - partially unusable (see above) | BDA (BIOS data area)                   |
+| 0x00000500                    | 0x00007BFF | almost 30 KiB                                 | RAM (guaranteed free for use)        | Conventional memory                    |
+| 0x00007C00 (typical location) | 0x00007DFF | 512 bytes                                     | RAM - partially unusable (see above) | Your OS BootSector                     |
+| 0x00007E00                    | 0x0007FFFF | 480.5 KiB                                     | RAM (guaranteed free for use)        | Conventional memory                    |
+| 0x00080000                    | 0x0009FBFF | approximately 120 KiB, depending on EBDA size | RAM (free for use, **if it exists**) | Conventional memory                    |
+| 0x0009FC00 (typical location) | 0x0009FFFF | 1 KiB                                         | RAM (unusable)                       | EBDA (Extended BIOS Data Area)         |
+| 0x000A0000                    | 0x000FFFFF | 384 KiB                                       | various (unusable)                   | Video memory, ROM Area                 |
+
