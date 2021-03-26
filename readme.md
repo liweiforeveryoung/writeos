@@ -81,3 +81,53 @@ https://wiki.osdev.org/index.php?title=Memory_Map_%28x86%29&oldid=13415
 | 0x0009FC00 (typical location) | 0x0009FFFF | 1 KiB                                         | RAM (unusable)                       | EBDA (Extended BIOS Data Area)         |
 | 0x000A0000                    | 0x000FFFFF | 384 KiB                                       | various (unusable)                   | Video memory, ROM Area                 |
 
+##### 第三天
+
+###### INT13
+
+磁盘读、写，扇区校验（verify），以及寻道（seek）
+
+```
+AH=0x02;（读盘）
+AH=0x03;（写盘）
+AH=0x04;（校验）
+AH=0x0c;（寻道）
+AL=处理对象的扇区数;（只能同时处理连续的扇区）
+CH=柱面号 &0xff;
+CL=扇区号（0-5位）|（柱面号&0x300）* * 2;
+DH=磁头号;
+DL=驱动器号；
+ES:BX=缓冲地址；(校验及寻道时不使用)
+返回值：
+FLACS.CF==0：没有错误，AH==0
+FLAGS.CF==1：有错误，
+错误号码存入AH内（与重置（reset）功能一样）
+```
+
+```
+Cylinder = 0 to 1023 (maybe 4095), Head = 0 to 15 (maybe 254, maybe 255), Sector = 1 to 63
+
+- Set AH = 2
+- AL = total sector count (0 is illegal) -- cannot cross ES page boundary, **or a cylinder boundary**, and must be < 128
+- CH = cylinder & 0xff
+- CL = Sector | ((cylinder >> 2) & 0xC0);
+- DH = Head -- may include two more cylinder bits
+- ES:BX -> buffer
+- Set DL = "drive number" -- typically 0x80, for the "C" drive
+- Issue an INT 0x13.
+
+The carry flag will be set if there is any error during the read. AH should be set to 0 on success.
+
+To write: set AH to 3, instead.
+
+Note: The limitation about not crossing cylinder boundaries is very annoying, especially when combined with the 127 sector limit -- because the arithmetic for the length and "start CHS" of the *next* consecutive read or write gets messy. The simplest workaround is to read or write only one sector at a time in CHS mode. Not all BIOSes have these two limitations, of course, but it is necessary to program for the "lowest common denominator".
+```
+
+###### 软盘
+
+1张软盘有80个柱面，2个磁头，18个扇区，且一个扇区有512字节。所以，一张软盘的容量是：80×2×18×512 = 1 474 560 Byte = 1 440KB
+
+含有IPL的启动区，位于C0-H0-S1（柱面0，磁头0，扇区1的缩写）.
+
+下一个扇区是C0-H0-S2。这次我们想要装载的就是这个扇区。
+
