@@ -35,6 +35,9 @@ void init_palette(void);
 
 void set_white_background(void);
 
+// 跑起来 yo yo yo checkout
+void run();
+
 unsigned char *const VRam_Addr_Begin = (unsigned char *const) 0xa0000;
 unsigned char *const VRam_Addr_End = (unsigned char *const) 0xaffff;
 
@@ -44,10 +47,7 @@ void HariMain(void) {
     box_fill8(VRam_Addr_Begin, 320, COL8_FF0000, 20, 20, 120, 120);
     box_fill8(VRam_Addr_Begin, 320, COL8_00FF00, 70, 50, 170, 150);
     box_fill8(VRam_Addr_Begin, 320, COL8_0000FF, 120, 80, 220, 180);
-
-    for (;;) {
-        io_hlt();
-    }
+    run();
 }
 
 // 将背景设置为白色
@@ -95,5 +95,11 @@ void box_fill8(unsigned char *vRam, int xSize, unsigned char c, int x0, int y0, 
     for (y = y0; y <= y1; y++) {
         for (x = x0; x <= x1; x++)
             vRam[y * xSize + x] = c;
+    }
+}
+
+void run() {
+    while (1) {
+        io_hlt();
     }
 }
