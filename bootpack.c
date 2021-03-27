@@ -2,22 +2,22 @@
 // Created by liwei1 on 2021/3/27.
 //
 
-const int COL8_000000 = 0;    // 黑
-const int COL8_FF0000 = 1;    // 亮红
-const int COL8_00FF00 = 2;    // 亮绿
-const int COL8_FFFF00 = 3;    // 亮黄
-const int COL8_0000FF = 4;    // 亮蓝
-const int COL8_FF00FF = 5;    // 亮紫
-const int COL8_00FFFF = 6;    // 浅亮蓝
-const int COL8_FFFFFF = 7;    // 白色
-const int COL8_C6C6C6 = 8;    // 亮灰
-const int COL8_840000 = 9;    // 暗红
-const int COL8_008400 = 10;    // 暗绿
-const int COL8_848400 = 11;    // 暗黄
-const int COL8_000084 = 12;    // 暗青
-const int COL8_840084 = 13;    // 暗紫
-const int COL8_008484 = 14;    // 浅暗蓝
-const int COL8_848484 = 15;    // 暗灰
+const char COL8_000000 = 0;    // 黑
+const char COL8_FF0000 = 1;    // 亮红
+const char COL8_00FF00 = 2;    // 亮绿
+const char COL8_FFFF00 = 3;    // 亮黄
+const char COL8_0000FF = 4;    // 亮蓝
+const char COL8_FF00FF = 5;    // 亮紫
+const char COL8_00FFFF = 6;    // 浅亮蓝
+const char COL8_FFFFFF = 7;    // 白色
+const char COL8_C6C6C6 = 8;    // 亮灰
+const char COL8_840000 = 9;    // 暗红
+const char COL8_008400 = 10;    // 暗绿
+const char COL8_848400 = 11;    // 暗黄
+const char COL8_000084 = 12;    // 暗青
+const char COL8_840084 = 13;    // 暗紫
+const char COL8_008484 = 14;    // 浅暗蓝
+const char COL8_848484 = 15;    // 暗灰
 
 void io_hlt(void);
 
@@ -41,12 +41,24 @@ void run();
 unsigned char *const VRam_Addr_Begin = (unsigned char *const) 0xa0000;
 unsigned char *const VRam_Addr_End = (unsigned char *const) 0xaffff;
 
+struct BootInfo {
+    char cyls;          // 磁盘的柱面数， ipl10.nas 中将柱面数写入了该地址
+    char ledS;          // 指示灯的状态
+    char vMode;         // 关于颜色数目的信息，颜色的位数
+    char reverse;       // 保留的字段
+    short screenX;      // 分辨率的 x (screen x)
+    short screenY;      // 分辨率的 y (screen y)
+    unsigned char *vRamAddr;     // 图像缓冲区的开始地址
+};
+
+struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x0ff0;
+
 void HariMain(void) {
     init_palette();
     set_white_background();
-    box_fill8(VRam_Addr_Begin, 320, COL8_FF0000, 20, 20, 120, 120);
-    box_fill8(VRam_Addr_Begin, 320, COL8_00FF00, 70, 50, 170, 150);
-    box_fill8(VRam_Addr_Begin, 320, COL8_0000FF, 120, 80, 220, 180);
+    box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_FF0000, 20, 20, 120, 120);
+    box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_00FF00, 70, 50, 170, 150);
+    box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_0000FF, 120, 80, 220, 180);
     run();
 }
 
