@@ -131,3 +131,5 @@ Note: The limitation about not crossing cylinder boundaries is very annoying, es
 
 下一个扇区是C0-H0-S2。这次我们想要装载的就是这个扇区。
 
+C0-H0-S18 的下一扇区是 C0-H1-S1
+
