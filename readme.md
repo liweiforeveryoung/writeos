@@ -185,3 +185,28 @@ AL=模式：（省略了一些不重要的画面模式）
 返回值：无
 ```
 
+###### 32位模式前期准备
+
+如果用32位模式就不能调用BIOS功能了。这是因为BIOS是用16位机器语言写的。<u>如果我们有什么事情想用BIOS来做，那就全部都放在开头先做</u>，因为一旦进入32位模式就不能调用BIOS函数了。（当然，也有从32位返回到16位的方法，但是非常费工夫，所以本书不予赘述。）再回头说说要使用BIOS做的事情。画面模式的设定已经做完了，接下来还想从BIOS得到键盘状态。所谓键盘状态，是指NumLock是ON还是OFF等这些状态。
+
+###### INT16 AH=2
+
+```
+AH = 02h
+Return:AL = shift flags (see #00582)
+AH destroyed by many BIOSes
+```
+
+```
+Bitfields for keyboard shift flags:
+
+Bit(s)  Description     (Table 00582)
+7      Insert active
+6      CapsLock active
+5      NumLock active
+4      ScrollLock active
+3      Alt key pressed (either Alt on 101/102-key keyboards)
+2      Ctrl key pressed (either Ctrl on 101/102-key keyboards)
+1      left shift key pressed
+0      right shift key pressed
+```
