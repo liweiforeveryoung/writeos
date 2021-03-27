@@ -1,5 +1,6 @@
 ; haribote-ipl
 ; TAB=4
+CYLS    EQU     10  ; equal 读取十个柱面
 ORG     0x7c00      ; 指明程序的装载地址，ORG 把程序装载到内存中的指定位置，为何是 0x7c00，见内存分布图
 ; 以下这段是标准FAT12格式软盘专用的代码
 JMP     entry
@@ -58,6 +59,15 @@ next:
     ADD CL,1        ; 读取下一个扇区
     CMP CL,18
     JBE readloop    ; jump below equal
+    MOV CL,1        ; 将扇区置于 1
+    ADD DH,1        ; 磁头 + 1
+    CMP DH,2
+    JB readloop
+    MOV CL,1        ; 扇区置于 1
+    MOV DH,0        ; 磁头置于 0
+    ADD CH,1        ; 柱面 + 1
+    CMP CH,CYLS     ;
+    JB readloop     ; jump below
 fin:
     HLT             ; halt , HLT是让CPU停止动作的指令，不过并不是彻底地停止（如果要彻底停止CPU的动作，只能切断电源），而是让CPU进入待机状态。只要外部发生变化，比如按下键盘，或是移动鼠标，CPU就会醒过来，继续执行程序。
     JMP fin
