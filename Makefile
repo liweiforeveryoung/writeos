@@ -77,3 +77,7 @@ clean :
 src_only :
 	$(MAKE) clean
 	-$(DEL) $(OSNAME).img
+
+run_and_clean:
+	$(MAKE) run
+	$(MAKE) src_only
