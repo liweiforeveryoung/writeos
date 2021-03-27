@@ -6,7 +6,7 @@ DSKCAC	EQU		0x00100000		; ディスクキャッシュの場所
 DSKCAC0	EQU		0x00008000		; ディスクキャッシュの場所（リアルモード）
 
 ; Boot_info
-CYLS        EQU     0x0ff0      ; 设置启动区
+CYLS        EQU     0x0ff0      ; 磁盘的柱面数， ipl10.nas 中将柱面数写入了该地址
 LEDS        EQU     0x0ff1      ; 指示灯的状态
 VMODE       EQU     0x0ff2      ; 关于颜色数目的信息，颜色的位数
 SCRNX       EQU     0x0ff4      ; 分辨率的 x (screen x)
