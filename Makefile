@@ -6,21 +6,22 @@ IMGTOL		= $(TOOLPATH)imgtol.exe
 COPY		= copy
 DEL			= del
 OSNAME		= haribote
+IPLNAME		= ipl10
 
-ipl.bin : ipl.nas Makefile
-	$(NASK) ipl.nas ipl.bin ipl.lst
+$(IPLNAME).bin : $(IPLNAME).nas Makefile
+	$(NASK) $(IPLNAME).nas $(IPLNAME).bin $(IPLNAME).lst
 
 $(OSNAME).sys : $(OSNAME).nas Makefile
 	$(NASK) $(OSNAME).nas $(OSNAME).sys $(OSNAME).lst
 
-$(OSNAME).img : ipl.bin $(OSNAME).sys Makefile
+$(OSNAME).img : $(IPLNAME).bin $(OSNAME).sys Makefile
 	$(EDIMG) imgin:../z_tools/fdimg0at.tek   \
-		wbinimg src:ipl.bin len:512 from:0 to:0 \
+		wbinimg src:$(IPLNAME).bin len:512 from:0 to:0 \
 		copy from:$(OSNAME).sys to:@: \
 		imgout:$(OSNAME).img
 
 asm :
-	$(MAKE) ipl.bin
+	$(MAKE) $(IPLNAME).bin
 
 img :
 	$(MAKE) $(OSNAME).img
@@ -31,8 +32,8 @@ run :
 	$(MAKE)	-C ../z_tools/qemu
 
 clean :
-	-$(DEL) ipl.bin
-	-$(DEL) ipl.lst
+	-$(DEL) $(IPLNAME).bin
+	-$(DEL) $(IPLNAME).lst
 	-$(DEL) $(OSNAME).sys
 	-$(DEL) $(OSNAME).lst
 
