@@ -1,7 +1,12 @@
+////
+//// Created by liwei1 on 2021/3/27.
+////
+void io_hlt(void);
+
 //
-// Created by liwei1 on 2021/3/27.
-//
-void HariMain(void) {
-    finish:
-    goto finish;
+void HariMain(void)
+{
+    fin:
+    io_hlt();
+    goto fin;
 }
