@@ -3,8 +3,6 @@
 //
 void io_hlt(void);
 
-void write_mem8(int addr, int data);
-
 void HariMain(void) {
     char *p = (char *) 0xa0000;
     for (; p < (char *) 0xaffff; ++p) {
