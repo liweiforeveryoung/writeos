@@ -81,3 +81,7 @@ src_only :
 run_and_clean:
 	$(MAKE) run
 	$(MAKE) src_only
+
+clean_and_run:
+	$(MAKE) src_only
+	$(MAKE) naskfunc.obj
