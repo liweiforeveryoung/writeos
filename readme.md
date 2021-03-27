@@ -210,3 +210,20 @@ Bit(s)  Description     (Table 00582)
 1      left shift key pressed
 0      right shift key pressed
 ```
+
+###### 导入 c 语言
+
+这个bootpack.c是怎样变成机器语言的呢？如果不能变成机器语言，就是说得再多也没有意义。这个步骤很长，让我们看一看。
+
+```
+首先，使用cc1.exe从bootpack.c生成bootpack.gas。
+
+第二步，使用gas2nask.exe从bootpack.gas生成bootpack.nas。
+
+第三步，使用nask.exe从bootpack.nas生成bootpack.obj。
+
+第四步，使用obi2bim.exe从bootpack.obj生成bootpack.bim。
+
+最后，使用bim2hrb.exe从bootpack.bim生成bootpack.hrb。这样就做成了机器语言，再使用copy指令将asmhead.bin与bootpack.hrb单纯结合到起来，就成了haribote.sys。
+```
+

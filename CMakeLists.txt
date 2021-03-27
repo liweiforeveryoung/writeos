@@ -3,4 +3,4 @@ project(writeos C)
 
 set(CMAKE_C_STANDARD 99)
 
-add_executable(writeos main.c)
+add_executable(writeos main.c bootpack.c)
