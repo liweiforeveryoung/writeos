@@ -68,6 +68,8 @@ next:
     ADD CH,1        ; 柱面 + 1
     CMP CH,CYLS     ;
     JB readloop     ; jump below
+
+    JMP 0xc200      ; 跳去 0xc200 去执行操作系统
 fin:
     HLT             ; halt , HLT是让CPU停止动作的指令，不过并不是彻底地停止（如果要彻底停止CPU的动作，只能切断电源），而是让CPU进入待机状态。只要外部发生变化，比如按下键盘，或是移动鼠标，CPU就会醒过来，继续执行程序。
     JMP fin
