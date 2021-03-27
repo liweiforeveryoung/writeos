@@ -34,6 +34,7 @@ entry:
     MOV CH,0        ; 柱面0
     MOV DH,0        ; 磁头0
     MOV CL,2        ; 扇区2
+readloop:
     MOV SI,0        ; 计数器初始化为 0
 retry:
     MOV AH,0x02     ; AH=0x02 ; + int 0x13 读盘
@@ -41,8 +42,7 @@ retry:
     MOV BX,0
     MOV DL,0x00     ; A 驱动器
     INT 0x13
-    JNC fin         ; 如果成功
-
+    JNC next        ; 如果成功
     ADD SI,1
     CMP SI,5
     JAE error       ; jump if above or equal，与 jge 的区别是，一个有符号，一个无符号
@@ -51,6 +51,13 @@ retry:
     MOV DL,0x00     ; 重置 a 驱动器
     INT 0x13
     JMP retry       ; 重试
+next:
+    MOV AX,ES
+    ADD AX,0x20     ; 段 x 16 就是 0x200 = 512，指向下一个 512 字节
+    MOV ES,AX
+    ADD CL,1        ; 读取下一个扇区
+    CMP CL,18
+    JBE readloop    ; jump below equal
 fin:
     HLT             ; halt , HLT是让CPU停止动作的指令，不过并不是彻底地停止（如果要彻底停止CPU的动作，只能切断电源），而是让CPU进入待机状态。只要外部发生变化，比如按下键盘，或是移动鼠标，CPU就会醒过来，继续执行程序。
     JMP fin
