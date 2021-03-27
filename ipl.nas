@@ -34,7 +34,7 @@ entry:
     MOV ES,AX       ; ES:BX=缓冲区
     MOV CH,0        ; 柱面0
     MOV DH,0        ; 磁头0
-    MOV CL,2        ; 扇区2
+    MOV CL,2        ; 扇区2 注意 第一次是从扇区 2 开始读起的
 readloop:
     MOV SI,0        ; 计数器初始化为 0
 retry:

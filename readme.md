@@ -133,3 +133,24 @@ Note: The limitation about not crossing cylinder boundaries is very annoying, es
 
 C0-H0-S18 的下一扇区是 C0-H1-S1
 
+###### haribote.img
+
+在0x002600附近，磁盘的这个位置好像保存着文件名
+
+0x004200那里，可以看到“F4 EB FD”
+
+F4 EB FD 即为 
+
+```assembly
+fin:
+    HLT
+    JMP     fin
+```
+
+所生成的二进制
+
+###### 从启动区执行操作系统
+
+要怎样才能执行磁盘映像上位于0x004200号地址的程序呢？现在的程序是从启动区开始，把磁盘上的内容装载到内存0x8000号地址，所以磁盘0x4200处的内容就应该位于内存0x8000+0x4200=0xc200号地址。这样的话，我们就往haribote.nas里加上ORG0xc200，然后在ipl.nas处理的最后加上JMP0xc200这个指令。
+
+> 其实是将磁盘的第2扇区一直到第 360 扇区的读取到了 0x8200~。可以视作将第1扇区读到了 0x8000，虽然并没有读取第一扇区的内容。
