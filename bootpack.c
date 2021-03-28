@@ -35,6 +35,8 @@ void init_palette(void);
 
 void set_white_background(void);
 
+void PrintChar(unsigned char *vRam, short xSize, short x0, short y0, const char *font, char color);
+
 // 跑起来 yo yo yo checkout
 void run();
 
@@ -53,12 +55,18 @@ struct BootInfo {
 
 struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x0ff0;
 
+const char Font_A[16] = {
+        0x00, 0x18, 0x18, 0x18, 0x18, 0x24, 0x24, 0x24,
+        0x24, 0x7e, 0x42, 0x42, 0x42, 0xe7, 0x00, 0x00
+};
+
 void HariMain(void) {
     init_palette();
     set_white_background();
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_FF0000, 20, 20, 120, 120);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_00FF00, 70, 50, 170, 150);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_0000FF, 120, 80, 220, 180);
+    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 10, 10, Font_A, COL8_000000);
     run();
 }
 
@@ -107,6 +115,23 @@ void box_fill8(unsigned char *vRam, int xSize, unsigned char c, int x0, int y0, 
     for (y = y0; y <= y1; y++) {
         for (x = x0; x <= x1; x++)
             vRam[y * xSize + x] = c;
+    }
+}
+
+// 打印字体
+void PrintChar(unsigned char *vRam, short xSize, short x0, short y0, const char *font, char color) {
+    const short font_width = 8;
+    const short font_height = 16;
+    short x, y;
+    for (y = y0; y < y0 + font_height; ++y) {
+        unsigned char flag = 0x80;
+        for (x = x0; x < x0 + font_width; ++x) {
+            unsigned char *fontAddr = vRam + y * xSize + x;
+            if ((font[y - y0] & flag) != 0) {
+                *fontAddr = color;
+            }
+            flag = flag >> 1;
+        }
     }
 }
 
