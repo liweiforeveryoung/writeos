@@ -277,3 +277,47 @@ CPU的管脚与内存相连。如果仅仅是与内存相连，CPU就只能完�
 下面再来介绍一下EFLAGS这一特别的寄存器。这是由名为FLAGS的16位寄存器扩展而来的32位寄存器。FLAGS是存储进位标志和中断标志等标志的寄存器。进位标志可以通过JC或JNC等跳转指令来简单地判断到
 
 底是0还是1。但对于中断标志，没有类似的JI或JNI命令，所以只能读入EFLAGS，再检查第9位是0还是1。顺便说一下，进位标志是EFLAGS的第0位。空白位没有特殊意义（或许留给将来的CPU用？）set_palette中想要做的事情是在设定调色板之前首先执行CLI，但处理结束以后一定要恢复中断标志，因此需要记住最开始的中断标志是什么。所以我们制作了一个函数io_load_eflags，读取最初的eflags值。处理结束以后，可以先看看eflags的内容，再决定是否执行STI，但仔细想一想，也没必要搞得那么复杂，干脆将eflags的值代入EFLAGS，中断标志位就恢复为原来的值了。函数o_store_eflags就是完成这个处理的。估计不说大家也知道了，CLI也好，STI也好，EFLAGS的读取也好，EFLAGS的写入也好，都不能用C语言来完成。所以我们就努力一下，用汇编语言来写吧。
+
+##### 第五天
+
+###### char 和 unsigned char 进行位运算的一个坑
+
+```c
+int main() {
+    char flag = (char) 0x80;
+    for (int i = 0; i < 8; ++i) {
+        printf("%x\n", flag);
+        flag >>= 1;
+    }
+    printf("============\n");
+    unsigned char uFlag = 0x80;
+    for (int i = 0; i < 8; ++i) {
+        printf("%x\n", uFlag);
+        uFlag >>= 1;
+    }
+}
+```
+
+输出：
+
+```
+ffffff80
+ffffffc0
+ffffffe0
+fffffff0
+fffffff8
+fffffffc
+fffffffe
+ffffffff
+============
+80
+40
+20
+10
+8
+4
+2
+1
+```
+
+所以，进行位运算时用 unsigned char。
