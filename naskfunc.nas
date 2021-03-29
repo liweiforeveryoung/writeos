@@ -11,6 +11,7 @@ GLOBAL _io_hlt,_io_cli,_io_sti,_io_stihlt
 GLOBAL _io_load_eflags,_io_store_eflags
 GLOBAL _io_in8,_io_in16,_io_in32
 GLOBAL _io_out8,_io_out16,_io_out32
+GLOBAL _load_gdtr, _load_idtr
 
 
 ; 以下是实际的函数
@@ -78,4 +79,17 @@ _io_out32:
     MOV     EDX,[ESP+4]     ; port
     MOV     EAX,[ESP+8]     ; data
     OUT     DX,EAX
+    RET
+
+_load_gdtr: ; void load_gdtr(int limit,int addr)    segment descriptor
+    MOV     AX,[ESP+4]      ; limit
+    MOV     [ESP+6],AX      ; todo ???
+    LGDT    [ESP+6]
+    RET
+
+
+_load_idtr: ; void load_idtr(int limit,int addr)    interrupt descriptor
+    MOV		AX,[ESP+4]		; limit
+    MOV		[ESP+6],AX      ; todo ???
+    LIDT	[ESP+6]
     RET
