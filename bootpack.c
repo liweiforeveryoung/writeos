@@ -156,7 +156,7 @@ void init_palette(void) {
     io_cli();
     io_out8(0x03c8, 0); // 从 0 号调色板开始设置
     for (; i < 16; ++i) {
-        io_out8(0x03c9, palette_table[i][0]);   // todo 教材中把这些值都除了 4 不懂为什么要除 4？
+        io_out8(0x03c9, palette_table[i][0]);   // 除以 4 的原因：http://oswiki.osask.jp/?VGA，因为高两位是无效的
         io_out8(0x03c9, palette_table[i][1]);
         io_out8(0x03c9, palette_table[i][2]);
     }
