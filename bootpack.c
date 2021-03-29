@@ -19,6 +19,9 @@ const char COL8_840084 = 13;    // 暗紫
 const char COL8_008484 = 14;    // 浅暗蓝
 const char COL8_848484 = 15;    // 暗灰
 
+const char COLOR_BLACK = 0;
+const char COLOR_WHITE = 7;
+
 void io_hlt(void);
 
 void io_cli(void);
@@ -66,7 +69,13 @@ void HariMain(void) {
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_FF0000, 20, 20, 120, 120);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_00FF00, 70, 50, 170, 150);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_0000FF, 120, 80, 220, 180);
-    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 10, 10, Font_A, COL8_000000);
+    extern char hankaku[4096];
+    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 8, 8, hankaku + 'A' * 16, COLOR_BLACK);
+    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 16, 8, hankaku + 'B' * 16, COLOR_BLACK);
+    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 24, 8, hankaku + 'C' * 16, COLOR_BLACK);
+    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 40, 8, hankaku + '1' * 16, COLOR_BLACK);
+    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 48, 8, hankaku + '2' * 16, COLOR_BLACK);
+    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 56, 8, hankaku + '3' * 16, COLOR_BLACK);
     run();
 }
 
@@ -74,7 +83,7 @@ void HariMain(void) {
 void set_white_background(void) {
     unsigned char *p = VRam_Addr_Begin;
     for (; p < VRam_Addr_End; ++p) {
-        *p = COL8_FFFFFF;
+        *p = COLOR_WHITE;
     }
 }
 
