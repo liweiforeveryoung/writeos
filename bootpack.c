@@ -58,10 +58,12 @@ struct BootInfo {
 
 struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x0ff0;
 
-const char Font_A[16] = {
-        0x00, 0x18, 0x18, 0x18, 0x18, 0x24, 0x24, 0x24,
-        0x24, 0x7e, 0x42, 0x42, 0x42, 0xe7, 0x00, 0x00
-};
+extern char hankaku[4096];
+
+char *getFont(char c) {
+    return hankaku + c * 16;
+}
+
 
 void HariMain(void) {
     init_palette();
@@ -69,13 +71,12 @@ void HariMain(void) {
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_FF0000, 20, 20, 120, 120);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_00FF00, 70, 50, 170, 150);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_0000FF, 120, 80, 220, 180);
-    extern char hankaku[4096];
-    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 8, 8, hankaku + 'A' * 16, COLOR_BLACK);
-    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 16, 8, hankaku + 'B' * 16, COLOR_BLACK);
-    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 24, 8, hankaku + 'C' * 16, COLOR_BLACK);
-    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 40, 8, hankaku + '1' * 16, COLOR_BLACK);
-    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 48, 8, hankaku + '2' * 16, COLOR_BLACK);
-    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 56, 8, hankaku + '3' * 16, COLOR_BLACK);
+    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 8, 8, getFont('A'), COLOR_BLACK);
+    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 16, 8, getFont('B'), COLOR_BLACK);
+    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 24, 8, getFont('C'), COLOR_BLACK);
+    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 40, 8, getFont('1'), COLOR_BLACK);
+    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 48, 8, getFont('2'), COLOR_BLACK);
+    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 56, 8, getFont('3'), COLOR_BLACK);
     run();
 }
 
