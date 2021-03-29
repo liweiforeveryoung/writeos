@@ -1,6 +1,7 @@
 //
 // Created by liwei1 on 2021/3/27.
 //
+#include <stdio.h>
 
 const char COL8_000000 = 0;    // 黑
 const char COL8_FF0000 = 1;    // 亮红
@@ -72,10 +73,12 @@ char *getFont(char c) {
 void HariMain(void) {
     init_palette();
     set_white_background();
+    char s[40] = {};
+    sprintf(s, "screenX = %d", Boot_Info_Ptr->screenX);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_FF0000, 20, 20, 120, 120);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_00FF00, 70, 50, 170, 150);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_0000FF, 120, 80, 220, 180);
-    print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 8, 8, "ABC 1234", COLOR_BLACK);
+    print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 8, 8, s, COLOR_BLACK);
     run();
 }
 
