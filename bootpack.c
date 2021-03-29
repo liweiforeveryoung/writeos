@@ -38,7 +38,11 @@ void init_palette(void);
 
 void set_white_background(void);
 
-void PrintChar(unsigned char *vRam, short xSize, short x0, short y0, const char *font, char color);
+// 打印字符 打印的并不是真正的字符
+void print_raw_char(unsigned char *vRam, short xSize, short x0, short y0, const char *c, char color);
+
+// 打印字符串 input: "abc 123" output "abc 123"
+void print_str(unsigned char *vRam, short xSize, short x0, short y0, const char *string, char color);
 
 // 跑起来 yo yo yo checkout
 void run();
@@ -71,12 +75,7 @@ void HariMain(void) {
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_FF0000, 20, 20, 120, 120);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_00FF00, 70, 50, 170, 150);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_0000FF, 120, 80, 220, 180);
-    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 8, 8, getFont('A'), COLOR_BLACK);
-    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 16, 8, getFont('B'), COLOR_BLACK);
-    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 24, 8, getFont('C'), COLOR_BLACK);
-    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 40, 8, getFont('1'), COLOR_BLACK);
-    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 48, 8, getFont('2'), COLOR_BLACK);
-    PrintChar(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 56, 8, getFont('3'), COLOR_BLACK);
+    print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 8, 8, "ABC 1234", COLOR_BLACK);
     run();
 }
 
@@ -128,8 +127,12 @@ void box_fill8(unsigned char *vRam, int xSize, unsigned char c, int x0, int y0, 
     }
 }
 
+void print_char(unsigned char *vRam, short xSize, short x0, short y0, const char *font, char color) {
+    print_raw_char(vRam, xSize, x0, y0, getFont(*font), color);
+}
+
 // 打印字体
-void PrintChar(unsigned char *vRam, short xSize, short x0, short y0, const char *font, char color) {
+void print_raw_char(unsigned char *vRam, short xSize, short x0, short y0, const char *c, char color) {
     const short font_width = 8;
     const short font_height = 16;
     short x, y;
@@ -137,11 +140,20 @@ void PrintChar(unsigned char *vRam, short xSize, short x0, short y0, const char 
         unsigned char flag = 0x80;
         for (x = x0; x < x0 + font_width; ++x) {
             unsigned char *fontAddr = vRam + y * xSize + x;
-            if ((font[y - y0] & flag) != 0) {
+            if ((c[y - y0] & flag) != 0) {
                 *fontAddr = color;
             }
             flag = flag >> 1;
         }
+    }
+}
+
+void print_str(unsigned char *vRam, short xSize, short x0, short y0, const char *string, char color) {
+    const char *pChar = string;
+    while (*pChar != '\0') {
+        print_char(vRam, xSize, x0, y0, pChar, color);
+        x0 += 8;
+        ++pChar;
     }
 }
 
