@@ -48,6 +48,13 @@ void print_str(unsigned char *vRam, short xSize, short x0, short y0, const char 
 // 跑起来 yo yo yo checkout
 void run();
 
+// 打印鼠标
+void print_mouse(unsigned char *vRam, short xSize, short x0, short y0,
+                 short mouseWidth, short mouseHeight, const char *mouse);
+
+// 初始化鼠标
+void init_mouse_cursor8(char *mouse, char bc);
+
 unsigned char *const VRam_Addr_Begin = (unsigned char *const) 0xa0000;
 unsigned char *const VRam_Addr_End = (unsigned char *const) 0xaffff;
 
@@ -74,11 +81,14 @@ void HariMain(void) {
     init_palette();
     set_white_background();
     char s[40] = {};
+    char mouse[16 * 16] = {};
     sprintf(s, "screenX = %d", Boot_Info_Ptr->screenX);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_FF0000, 20, 20, 120, 120);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_00FF00, 70, 50, 170, 150);
     box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, COL8_0000FF, 120, 80, 220, 180);
     print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 8, 8, s, COLOR_BLACK);
+    init_mouse_cursor8(mouse, COLOR_WHITE);
+    print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, 16, 16, mouse);
     run();
 }
 
@@ -157,6 +167,56 @@ void print_str(unsigned char *vRam, short xSize, short x0, short y0, const char 
         print_char(vRam, xSize, x0, y0, pChar, color);
         x0 += 8;
         ++pChar;
+    }
+}
+
+// 打印鼠标
+void print_mouse(unsigned char *vRam, short xSize, short x0, short y0,
+                 short mouseWidth, short mouseHeight, const char *mouse) {
+    short extraY, extraX;
+    for (extraY = 0; extraY < mouseHeight; ++extraY) {
+        for (extraX = 0; extraX < mouseWidth; ++extraX) {
+            short actualX = x0 + extraX;
+            short actualY = y0 + extraY;
+            unsigned char *actualAddr = vRam + actualY * xSize + actualX;
+            *actualAddr = mouse[extraY * mouseWidth + extraX];
+        }
+    }
+}
+
+void init_mouse_cursor8(char *mouse, char bc) {
+    static char cursor[16][16] = {
+            "**************..",
+            "*OOOOOOOOOOO*...",
+            "*OOOOOOOOOO*....",
+            "*OOOOOOOOO*.....",
+            "*OOOOOOOO*......",
+            "*OOOOOOO*.......",
+            "*OOOOOOO*.......",
+            "*OOOOOOOO*......",
+            "*OOOO**OOO*.....",
+            "*OOO*..*OOO*....",
+            "*OO*....*OOO*...",
+            "*O*......*OOO*..",
+            "**........*OOO*.",
+            "*..........*OOO*",
+            "............*OO*",
+            ".............***"
+    };
+    int x, y;
+
+    for (y = 0; y < 16; y++) {
+        for (x = 0; x < 16; x++) {
+            if (cursor[y][x] == '*') {
+                mouse[y * 16 + x] = COLOR_BLACK;
+            }
+            if (cursor[y][x] == 'O') {
+                mouse[y * 16 + x] = COLOR_WHITE;
+            }
+            if (cursor[y][x] == '.') {
+                mouse[y * 16 + x] = bc;
+            }
+        }
     }
 }
 
