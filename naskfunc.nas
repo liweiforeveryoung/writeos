@@ -81,7 +81,7 @@ _io_out32:
     OUT     DX,EAX
     RET
 
-_load_gdtr: ; void load_gdtr(int limit,int addr)    segment descriptor
+_load_gdtr: ; void load_gdtr(int limit,int addr)    segment descriptor 见 readme
     MOV     AX,[ESP+4]      ; limit
     MOV     [ESP+6],AX      ; todo ???
     LGDT    [ESP+6]

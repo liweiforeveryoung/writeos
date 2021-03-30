@@ -19,12 +19,14 @@ struct BootInfo {
 // 对于段的描述
 struct SEGMENT_DESCRIPTOR {
     short limit_low;
-    short base_low;
-    char base_mid;
+    short base_low;     // 段的地址
+    char base_mid;      // 段的地址
     char access_right;
     char limit_high;
-    char base_high;
+    char base_high;     // 段的地址
 };
+// 为什么要分为3段呢？主要是为了与80286时代的程序兼容。有了这样的规格，80286用的操作系统，也可以不用修改就在386以后的CPU上运行了。
+
 // 对于中断向量的描述
 struct INTERRUPT_DESCRIPTOR {
     short offset_low;
