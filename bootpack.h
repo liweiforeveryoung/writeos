@@ -103,4 +103,20 @@ extern const char COL8_848484;            // 暗灰
 extern const char COLOR_BLACK;
 extern const char COLOR_WHITE;
 
+/* int.c */
+void init_pic(void);
+
+extern const int PIC0_ICW1;
+extern const int PIC0_OCW2;
+extern const int PIC0_IMR;
+extern const int PIC0_ICW2;
+extern const int PIC0_ICW3;
+extern const int PIC0_ICW4;
+extern const int PIC1_ICW1;
+extern const int PIC1_OCW2;
+extern const int PIC1_IMR;
+extern const int PIC1_ICW2;
+extern const int PIC1_ICW3;
+extern const int PIC1_ICW4;
+
 #endif //WRITEOS_BOOTPACK_H
