@@ -1,5 +1,5 @@
 #所涉及到的目标(obj)文件集合
-OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj graphic.obj dsctbl.obj
+OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj graphic.obj dsctbl.obj int.obj
 
 TOOLPATH	= ../z_tools/
 MAKE		= $(TOOLPATH)make.exe -r
