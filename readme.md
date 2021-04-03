@@ -793,3 +793,27 @@ POPAD指令相当于按以上相反的顺序，把它们全都POP出来。
 
 > 意思是如果你不执行这句话，那么 cpu 就认为你还没有处理完 irq1，即使下次 irq1 再次发生了，cpu 也不会告诉你了，哼。
 
+######  io_stihlt()
+
+这是作者原本写的代码
+
+```c
+for (;;) {
+	io_cli();
+	if (keybuf.flag == 0) {
+		io_stihlt();
+	} else {
+		i = keybuf.data;
+		keybuf.flag = 0;
+		io_sti();
+		sprintf(s, "%02X", i);
+		boxfill8(binfo->vram, binfo->scrnx, COL8_008484, 0, 16, 15, 31);
+		putfonts8_asc(binfo->vram, binfo->scrnx, 0, 16, COL8_FFFFFF, s);
+	}
+}
+```
+
+作者用上了 io_stihlt()，并对原因做出了解释，解释如下：
+
+> 可能有人会认为，不做这个函数，而是用“io_sti();io_hlt();”不也行吗？但是，实际上这样写有点问题。如果io_sti()之后产生了中断，keybuf里就会存入数据，这时候让CPU进入HLT状态，keybuf里存入的数据就不会被觉察到。根据CPU的规范，机器语言的STI指令之后，如果紧跟着HLT指令，那么就暂不受理这两条指令之间的中断，而要等到HLT指令之后才受理，所以使用io_stihlt函数就能克服这一问题。
+

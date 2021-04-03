@@ -6,6 +6,7 @@
 #define WRITEOS_BOOTPACK_H
 
 #include <stdio.h>
+#include "global.h"
 
 struct BootInfo {
     char cyls;          // 磁盘的柱面数， ipl10.nas 中将柱面数写入了该地址
@@ -44,6 +45,8 @@ void io_cli(void);
 
 // 处理中断
 void io_sti();
+
+void io_stihlt();
 
 void io_out8(int port, int data);
 
