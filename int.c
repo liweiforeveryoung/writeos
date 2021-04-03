@@ -55,17 +55,17 @@ void int_handler21(int *esp) {
 
 // handler mouse event
 void int_handler2c(int *esp) {
+    io_out8(PIC1_OCW2, 0x64);   // 通知从 pic  4 号 irq 受理完成（从 pic 的 4号相当于 12 号）
+    io_out8(PIC0_OCW2, 0x62);   // 通知主 pic 2 号受理完成，因为从 pic 接在主 pic 的 2号引线上
+    unsigned char mouseInput = io_in8(PORT_KEYDAT);
     print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, "mouse!!!", COLOR_BLACK);
-    for (;;) {
-        io_hlt();
-    }
 }
 
 // 来自PIC0的不完全中断对策,由于芯片组的原因，在PIC初始化时，Athlon 64X2机等会发生一次中断
 // 该中断处理函数对该中断什么也不做就这样过去,为什么什么都不做？
 // 该中断是由于PIC初始化时的电气噪声造成的,不必认真处理什么。
 // 我试了一下，即使没有这个 handler 27 也不会有什么影响，但为了保险还是加上吧
-// 免得之后除了什么幺蛾子
+// 免得之后出了什么幺蛾子
 void int_handler27(int *esp) {
     io_out8(PIC0_OCW2, 0x67);
 }
