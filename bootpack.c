@@ -39,16 +39,24 @@ void HariMain(void) {
 
 
 void run() {
-    unsigned char input = 0;
+    unsigned char input, type;
     bool exist = false;
     while (1) {
         io_cli();       // 禁用中断
-        exist = read_data_from_buffer(&Key_buffer, &input);
+        exist = read_data_from_buffer(&Key_buffer, &input, &type);
         if (exist) {
             io_sti();
-            // 如果 buffer 内有数据
             char str[4] = {0};
-            sprintf(str, "%x", input);
+            // 如果 buffer 内有数据
+            switch (type) {
+                case FromMouse:
+                    sprintf(str, "m %x", input);
+                    break;
+                case FromKeyBoard:
+                    sprintf(str, "k %x", input);
+                    break;
+                default:
+            }
             box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 20, 20, 200, 200, COLOR_WHITE);
             print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 20, 20, str, COLOR_BLACK);
         } else {

@@ -24,20 +24,22 @@ bool buffer_is_empty(struct KeyBuffer *buffer) {
 }
 
 // 成功则返回 true，失败则返回 false
-bool write_data_into_buffer(struct KeyBuffer *buffer, unsigned char datum) {
+bool write_data_into_buffer(struct KeyBuffer *buffer, unsigned char datum, unsigned char type) {
     if (buffer_is_full(buffer)) {
         return false;
     }
     buffer->data[buffer->end_index] = datum;
+    buffer->type[buffer->end_index] = type;
     buffer->end_index = next_index(KeyBufferLength, buffer->end_index);
     return true;
 }
 
-bool read_data_from_buffer(struct KeyBuffer *buffer, unsigned char *datum) {
+bool read_data_from_buffer(struct KeyBuffer *buffer, unsigned char *datum, unsigned char *type) {
     if (buffer_is_empty(buffer)) {
         return false;
     }
     *datum = buffer->data[buffer->cur_index];
+    *type = buffer->type[buffer->cur_index];
     buffer->cur_index = next_index(KeyBufferLength, buffer->cur_index);
     return true;
 }
