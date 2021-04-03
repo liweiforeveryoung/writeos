@@ -23,10 +23,7 @@ void HariMain(void) {
     print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 8, 8, s, COLOR_BLACK);
     init_mouse_cursor8(mouse, COLOR_WHITE);
     print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, 16, 16, mouse);
-
-    io_out8(PIC0_IMR, 0xf9);    // oxf9  = 1111 1001 如果等于 1，代表屏蔽该中断 mask，处理 1号中断2号中断
-    io_out8(PIC1_IMR, 0xef);    // oxef  = 1110 1111 处理 12(c) 号中断
-
+    
     run();
 }
 
