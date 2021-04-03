@@ -2,6 +2,7 @@
 // Created by liwei1 on 2021/4/1.
 //
 #include "bootpack.h"
+#include "keybuffer.h"
 
 const int PIC0_ICW1 = 0x0020;
 const int PIC0_OCW2 = 0x0020;
@@ -39,16 +40,14 @@ void init_pic(void) {
 // 键盘对应    int 21
 
 #define PORT_KEYDAT        0x0060
+extern struct KeyBuffer Key_buffer;
 
 // handler keyboard event
 void int_handler21(int *esp) {
     io_out8(PIC0_OCW2, 0x61);
     // 这个地方切忌要用 unsigned char 来接收，用 char 的话打印出来的东西会有点奇怪
     unsigned char input = io_in8(PORT_KEYDAT); // 想要处理下一次键盘中断有两个条件：1、io_out8 ocw 2、通过 io_in 把数据从端口中读出来；两者缺一不可
-    char str[4] = {0};
-    sprintf(str, "%x", input);
-    box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 20, 20, 200, 200, COLOR_WHITE);
-    print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 20, 20, str, COLOR_BLACK);
+    write_data_into_buffer(&Key_buffer, input);
 }
 
 // handler mouse event
