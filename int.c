@@ -31,3 +31,31 @@ void init_pic(void) {
     io_out8(PIC1_ICW4, 0x01); // 无缓冲区模式 电气特性 照抄即可
 }
 
+// 鼠标是IRQ12，键盘是IRQ1
+// 所以鼠标对应 int 2c
+// 键盘对应    int 21
+
+// handler keyboard event
+void int_handler21(int *esp) {
+    print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 16, 16, "key board!!!", COLOR_BLACK);
+    for (;;) {
+        io_hlt();
+    }
+}
+
+// handler mouse event
+void int_handler2c(int *esp) {
+    print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, "mouse!!!", COLOR_BLACK);
+    for (;;) {
+        io_hlt();
+    }
+}
+
+// 来自PIC0的不完全中断对策,由于芯片组的原因，在PIC初始化时，Athlon 64X2机等会发生一次中断
+// 该中断处理函数对该中断什么也不做就这样过去,为什么什么都不做？
+// 该中断是由于PIC初始化时的电气噪声造成的,不必认真处理什么。
+// 我试了一下，即使没有这个 handler 27 也不会有什么影响，但为了保险还是加上吧
+// 免得之后除了什么幺蛾子
+void int_handler27(int *esp) {
+    io_out8(PIC0_OCW2, 0x67);
+}

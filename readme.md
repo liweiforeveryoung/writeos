@@ -763,3 +763,27 @@ PIC的寄存器都是八位的。
 以INT 0x20~0x2f接收中断信号IRQ0~15
 
 INT 0x00~0x1f不能用于IRQ，因为应用程序想要对操作系统干坏事的时候，CPU内部会自动产生INT  0x00~0x1f，如果IRQ与这些号码重复了，  CPU就分不清它到底是IRQ，还是CPU的系统保护通知。
+
+###### PUSHAD 和 POPAD
+
+pushad 相当于
+
+```assembly
+PUSH EAX
+PUSH ECX
+PUSH EDX
+PUSH EBX
+PUSH ESP
+PUSH EBP
+PUSH ESI
+PUSH EDI
+```
+
+POPAD指令相当于按以上相反的顺序，把它们全都POP出来。
+
+###### sti 和 cli
+
+执行STI指令后，IF（interrupt   flag，中断许可标志位）变为1，CPU接受来自外部设备的中断（参考4.6节）。CPU的中断信号只有一根，所以IF也只有一个，不像PIC那样有8位。
+
+
+

@@ -16,6 +16,7 @@ struct BootInfo {
     short screenY;      // 分辨率的 y (screen y)
     unsigned char *vRamAddr;     // 图像缓冲区的开始地址
 };
+extern struct BootInfo *const Boot_Info_Ptr;
 // 对于段的描述
 struct SEGMENT_DESCRIPTOR {
     short limit_low;
@@ -38,13 +39,26 @@ struct INTERRUPT_DESCRIPTOR {
 
 void io_hlt(void);
 
+// 禁用中断
 void io_cli(void);
+
+// 处理中断
+void io_sti();
 
 void io_out8(int port, int data);
 
 int io_load_eflags(void);
 
 void io_store_eflags(int eflags);
+
+// 键盘的中断处理函数
+void asm_int_handler21();
+
+// 鼠标中断处理函数
+void asm_int_handler2c();
+
+//
+void asm_int_handler27();
 
 // 跑起来 yo yo yo checkout
 void run();
