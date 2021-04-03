@@ -47,6 +47,8 @@ void io_sti();
 
 void io_out8(int port, int data);
 
+int io_in8(int port);
+
 int io_load_eflags(void);
 
 void io_store_eflags(int eflags);
@@ -86,7 +88,7 @@ void print_str(unsigned char *vRam, short xSize, short x0, short y0, const char 
 // 打印字体
 void print_raw_char(unsigned char *vRam, short xSize, short x0, short y0, const char *c, char color);
 
-void print_char(unsigned char *vRam, short xSize, short x0, short y0, const char *font, char color);
+void print_char(unsigned char *vRam, short xSize, short x0, short y0, char font, char color);
 
 void box_fill8(unsigned char *vRam, int xSize, unsigned char c, int x0, int y0, int x1, int y1);
 

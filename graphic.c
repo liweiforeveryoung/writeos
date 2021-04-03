@@ -76,8 +76,8 @@ void box_fill8(unsigned char *vRam, int xSize, unsigned char c, int x0, int y0, 
     }
 }
 
-void print_char(unsigned char *vRam, short xSize, short x0, short y0, const char *font, char color) {
-    print_raw_char(vRam, xSize, x0, y0, getFont(*font), color);
+void print_char(unsigned char *vRam, short xSize, short x0, short y0, const char font, char color) {
+    print_raw_char(vRam, xSize, x0, y0, getFont(font), color);
 }
 
 // 打印字体
@@ -100,7 +100,7 @@ void print_raw_char(unsigned char *vRam, short xSize, short x0, short y0, const 
 void print_str(unsigned char *vRam, short xSize, short x0, short y0, const char *string, char color) {
     const char *pChar = string;
     while (*pChar != '\0') {
-        print_char(vRam, xSize, x0, y0, pChar, color);
+        print_char(vRam, xSize, x0, y0, *pChar, color);
         x0 += 8;
         ++pChar;
     }
