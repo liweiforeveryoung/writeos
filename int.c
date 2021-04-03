@@ -4,6 +4,7 @@
 #include "bootpack.h"
 #include "keybuffer.h"
 #include "naskfunc.h"
+#include "graphic.h"
 
 const int PIC0_ICW1 = 0x0020;
 const int PIC0_OCW2 = 0x0020;
@@ -17,6 +18,8 @@ const int PIC1_IMR = 0x00a1;
 const int PIC1_ICW2 = 0x00a1;
 const int PIC1_ICW3 = 0x00a1;
 const int PIC1_ICW4 = 0x00a1;
+
+const int PORT_KEYDAT = 0x0060;
 
 void init_pic(void) {
     io_out8(PIC0_IMR, 0xff); // 禁止所有中断
@@ -40,7 +43,6 @@ void init_pic(void) {
 // 所以鼠标对应 int 2c
 // 键盘对应    int 21
 
-#define PORT_KEYDAT        0x0060
 extern struct KeyBuffer Key_buffer;
 
 // handler keyboard event
