@@ -12,7 +12,8 @@ GLOBAL _io_load_eflags,_io_store_eflags
 GLOBAL _io_in8,_io_in16,_io_in32
 GLOBAL _io_out8,_io_out16,_io_out32
 GLOBAL _load_gdtr, _load_idtr
-
+GLOBAL _asm_int_handler21,_asm_int_handler2c,_asm_int_handler27
+EXTERN _int_handler21,_int_handler2c,_int_handler27
 
 ; 以下是实际的函数
 [SECTION .text]         ; 目标文件中写了这些之后再写程序
@@ -83,13 +84,74 @@ _io_out32:
 
 _load_gdtr: ; void load_gdtr(int limit,int addr)    segment descriptor 见 readme
     MOV     AX,[ESP+4]      ; limit
-    MOV     [ESP+6],AX      ; todo ???
+    MOV     [ESP+6],AX      ;
     LGDT    [ESP+6]
     RET
 
 
 _load_idtr: ; void load_idtr(int limit,int addr)    interrupt descriptor
     MOV		AX,[ESP+4]		; limit
-    MOV		[ESP+6],AX      ; todo ???
+    MOV		[ESP+6],AX      ;
     LIDT	[ESP+6]
     RET
+
+; 中断处理完成之后，不能执行“return;”（=RET指令），而是必须执行 IRETD 指令，因此必须用汇编来完成
+_asm_int_handler21:
+    PUSH    ES
+    PUSH    DS
+    PUSHAD          ; 上面三个 push 会把寄存器的值都存起来，包括 EAX，ESP
+
+    MOV     EAX,ESP ;  这两句代码是用来干啥的，没看懂
+    PUSH    EAX     ;  这两句代码是用来干啥的，没看懂
+
+    MOV     AX,SS   ;   将 DS 和 ES 调整到与 SS 相等
+    MOV     DS,AX   ;   将 DS 和 ES 调整到与 SS 相等
+    MOV     ES,AX   ;   将 DS 和 ES 调整到与 SS 相等
+    CALL    _int_handler21
+
+    POP     EAX
+
+    POPAD           ; 下面三个 pop 会把寄存器的值都弹出去
+    POP     DS
+    POP     ES
+    IRETD
+
+_asm_int_handler2c:
+    PUSH    ES
+    PUSH    DS
+    PUSHAD
+
+    MOV     EAX,ESP
+    PUSH    EAX
+
+    MOV     AX,SS
+    MOV     DS,AX
+    MOV     ES,AX
+    CALL    _int_handler2c
+
+    POP     EAX
+
+    POPAD
+    POP     DS
+    POP     ES
+    IRETD
+
+_asm_int_handler27:
+     PUSH    ES
+     PUSH    DS
+     PUSHAD
+
+     MOV     EAX,ESP
+     PUSH    EAX
+
+     MOV     AX,SS
+     MOV     DS,AX
+     MOV     ES,AX
+     CALL    _int_handler27
+
+     POP     EAX
+
+     POPAD
+     POP     DS
+     POP     ES
+     IRETD

@@ -25,7 +25,7 @@ void init_gdt() {
     }
     set_segment_desc(gdt + 1, 0xffffffff, 0x00000000, 0x4092);
     set_segment_desc(gdt + 2, 0x0007ffff, 0x00280000, 0x409a);
-    load_gdtr(0xffff, (int) 0x00270000);
+    load_gdtr(0xffff, (int) gdt);
 }
 
 void set_interrupt_desc(struct INTERRUPT_DESCRIPTOR *id, int offset, int selector, int ar) {
@@ -36,6 +36,9 @@ void set_interrupt_desc(struct INTERRUPT_DESCRIPTOR *id, int offset, int selecto
     id->offset_high = (offset >> 16) & 0xffff;
 }
 
+
+#define AR_INTGATE32    0x008e
+
 // 初始化中断向量表  interrupt descriptor table
 void init_idt() {
     struct INTERRUPT_DESCRIPTOR *idt = (struct INTERRUPT_DESCRIPTOR *) 0x0026f800;
@@ -44,4 +47,9 @@ void init_idt() {
         set_interrupt_desc(idt + i, 0, 0, 0);
     }
     load_idtr(0x7ff, (int) idt);
+    // 2 << 3 表示段号是 2，之所以要左移3是因为低三位有别的意思，这里的低三位必须为 0
+    // 将该中断的属性，设定为0x008e。它表示这是用于中断处理的有效设定
+    set_interrupt_desc(idt + 0x21, (int) asm_int_handler21, 2 * 8, AR_INTGATE32);
+    set_interrupt_desc(idt + 0x2c, (int) asm_int_handler2c, 2 * 8, AR_INTGATE32);
+    set_interrupt_desc(idt + 0x27, (int) asm_int_handler27, 2 * 8, AR_INTGATE32);
 }

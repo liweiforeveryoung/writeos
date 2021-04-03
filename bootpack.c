@@ -8,6 +8,10 @@ struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x0ff0;
 
 
 void HariMain(void) {
+    init_gdt();
+    init_idt();
+    init_pic();
+    io_sti();       // todo 为什么把 sti 放在这里可以达到效果，明明 在 init_palette 里调用了 io_cli，按理按照 cli 之后就不该会鼠标有反应了
     init_palette();
     set_white_background();
     char s[40] = {};
@@ -19,8 +23,10 @@ void HariMain(void) {
     print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 8, 8, s, COLOR_BLACK);
     init_mouse_cursor8(mouse, COLOR_WHITE);
     print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, 16, 16, mouse);
-    init_gdt();
-    init_idt();
+
+    io_out8(PIC0_IMR, 0xf9);    // oxf9  = 1111 1001 如果等于 1，代表屏蔽该中断 mask，处理 1号中断2号中断
+    io_out8(PIC1_IMR, 0xef);    // oxef  = 1110 1111 处理 12(c) 号中断
+
     run();
 }
 
