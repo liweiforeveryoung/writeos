@@ -90,7 +90,7 @@ void print_raw_char(unsigned char *vRam, short xSize, short x0, short y0, const 
 
 void print_char(unsigned char *vRam, short xSize, short x0, short y0, char font, char color);
 
-void box_fill8(unsigned char *vRam, int xSize, unsigned char c, int x0, int y0, int x1, int y1);
+void box_fill8(unsigned char *vRam, int xSize, int x0, int y0, int x1, int y1, unsigned char c);
 
 // 设置调色板
 void init_palette(void);

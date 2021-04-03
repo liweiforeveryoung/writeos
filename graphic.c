@@ -68,7 +68,7 @@ void init_palette(void) {
     io_store_eflags(eFlags);
 }
 
-void box_fill8(unsigned char *vRam, int xSize, unsigned char c, int x0, int y0, int x1, int y1) {
+void box_fill8(unsigned char *vRam, int xSize, int x0, int y0, int x1, int y1, unsigned char c) {
     int x, y;
     for (y = y0; y <= y1; y++) {
         for (x = x0; x <= x1; x++)
