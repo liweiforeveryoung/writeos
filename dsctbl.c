@@ -1,6 +1,5 @@
-#include <stdio.h>
-#include "bootpack.h"
 #include "naskfunc.h"
+#include "dsctbl.h"
 
 void set_segment_desc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar) {
     if (limit > 0xfffff) {

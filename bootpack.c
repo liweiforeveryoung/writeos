@@ -6,6 +6,8 @@
 #include "keybuffer.h"
 #include "naskfunc.h"
 #include "graphic.h"
+#include "dsctbl.h"
+#include "int.h"
 
 struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x0ff0;
 
