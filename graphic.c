@@ -2,9 +2,8 @@
 // Created by liwei1 on 2021/3/30.
 //
 
-#include <stdio.h>
-#include "bootpack.h"
 #include "naskfunc.h"
+#include "graphic.h"
 
 const char COL8_000000 = 0;             // 黑
 const char COL8_FF0000 = 1;             // 亮红
