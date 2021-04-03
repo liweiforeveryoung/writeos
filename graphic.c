@@ -4,6 +4,7 @@
 
 #include <stdio.h>
 #include "bootpack.h"
+#include "naskfunc.h"
 
 const char COL8_000000 = 0;             // 黑
 const char COL8_FF0000 = 1;             // 亮红

@@ -3,6 +3,7 @@
 //
 #include "bootpack.h"
 #include "keybuffer.h"
+#include "naskfunc.h"
 
 const int PIC0_ICW1 = 0x0020;
 const int PIC0_OCW2 = 0x0020;
