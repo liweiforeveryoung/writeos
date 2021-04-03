@@ -31,8 +31,8 @@ void init_pic(void) {
     io_out8(PIC0_ICW4, 0x01); // 无缓冲区模式 电气特性 照抄即可
 
     io_out8(PIC1_ICW1, 0x11);// 边沿触发模式(edge trigger mode) 电气特性 照抄即可
-    io_out8(PIC0_ICW2, 0x28); // IRQ8~15 由 int28~2f 接收
-    io_out8(PIC0_ICW3, 1 << 2);  // PIC1 由 IRQ2 连接
+    io_out8(PIC1_ICW2, 0x28); // IRQ8~15 由 int28~2f 接收
+    io_out8(PIC1_ICW3, 1 << 2);  // PIC1 由 IRQ2 连接
     io_out8(PIC1_ICW4, 0x01); // 无缓冲区模式 电气特性 照抄即可
 
     io_out8(PIC0_IMR, 0xf9);    // oxf9  = 1111 1001 如果等于 1，代表屏蔽该中断 mask，处理 1号中断2号中断

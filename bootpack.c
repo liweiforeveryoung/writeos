@@ -8,8 +8,9 @@
 #include "graphic.h"
 #include "dsctbl.h"
 #include "int.h"
+#include "kbc.h"
 
-struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x0ff0;
+struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x00000ff0;
 
 struct KeyBuffer Key_buffer;
 
@@ -31,6 +32,8 @@ void HariMain(void) {
     init_mouse_cursor8(mouse, COLOR_WHITE);
     print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, 16, 16, mouse);
 
+    init_keyboard();
+    enable_mouse();
     run();
 }
 
