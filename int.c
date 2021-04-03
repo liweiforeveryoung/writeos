@@ -38,12 +38,15 @@ void init_pic(void) {
 // 所以鼠标对应 int 2c
 // 键盘对应    int 21
 
+#define PORT_KEYDAT        0x0060
+
 // handler keyboard event
 void int_handler21(int *esp) {
-    print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 16, 16, "key board!!!", COLOR_BLACK);
-    for (;;) {
-        io_hlt();
-    }
+    static int count = 0;
+    io_out8(PIC0_OCW2, 0x61);
+    int data = io_in8(PORT_KEYDAT); // 想要处理下一次键盘中断有两个条件：1、io_out8 ocw 2、通过 io_in 把数据从端口中读出来；两者缺一不可
+    print_char(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 16, 16, 'a' + count, COLOR_BLACK);
+    count++;
 }
 
 // handler mouse event
