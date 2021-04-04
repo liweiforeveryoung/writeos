@@ -9,6 +9,7 @@
 #include "dsctbl.h"
 #include "int.h"
 #include "kbc.h"
+#include "mousedecoder.h"
 
 struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x00000ff0;
 
@@ -40,17 +41,23 @@ void HariMain(void) {
 
 void run() {
     unsigned char input, type;
+    unsigned char *mouse_data;
     bool exist = false;
+    struct MouseDecoder mouse;
+    init_mouse(&mouse);
     while (1) {
         io_cli();       // 禁用中断
         exist = read_data_from_buffer(&Key_buffer, &input, &type);
         if (exist) {
             io_sti();
-            char str[4] = {0};
+            char str[10] = {0};
             // 如果 buffer 内有数据
             switch (type) {
                 case FromMouse:
-                    sprintf(str, "m %x", input);
+                    mouse_data = recv_data(&mouse, input);
+                    if (mouse_data != nullptr) {
+                        sprintf(str, "m %x %x %x", mouse_data[0], mouse_data[1], mouse_data[2]);
+                    }
                     break;
                 case FromKeyBoard:
                     sprintf(str, "k %x", input);
