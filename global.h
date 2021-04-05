@@ -10,4 +10,8 @@
 #define false 0
 #define nullptr 0
 
+short min_short(short lhs, short rhs);
+
+short max_short(short lhs, short rhs);
+
 #endif //WRITEOS_GLOBAL_H
