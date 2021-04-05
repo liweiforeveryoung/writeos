@@ -68,6 +68,12 @@ void run() {
                         mouse_y = get_mouse_y(&mouse_decoder);
                         x += mouse_x;
                         y += mouse_y;
+
+                        x = min_short(x, Boot_Info_Ptr->screenX - MouseWidth);
+                        x = max_short(x, 0);
+                        y = min_short(y, Boot_Info_Ptr->screenY - MouseHeight);
+                        y = max_short(y, 0);
+
                         button = get_button(&mouse_decoder);
                         set_white_background();
                         print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, x, y, MouseWidth,
