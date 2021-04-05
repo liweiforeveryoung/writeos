@@ -41,9 +41,11 @@ void HariMain(void) {
 
 void run() {
     unsigned char input, type;
-    unsigned char *mouse_data;
+    bool mouse_is_ready;
+    unsigned char x, y;
     bool exist = false;
     struct MouseDecoder mouse;
+    enum Button button;
     init_mouse(&mouse);
     while (1) {
         io_cli();       // 禁用中断
@@ -54,9 +56,12 @@ void run() {
             // 如果 buffer 内有数据
             switch (type) {
                 case FromMouse:
-                    mouse_data = recv_data(&mouse, input);
-                    if (mouse_data != nullptr) {
-                        sprintf(str, "m %x %x %x", mouse_data[0], mouse_data[1], mouse_data[2]);
+                    mouse_is_ready = recv_data(&mouse, input);
+                    if (mouse_is_ready) {
+                        x = get_mouse_x(&mouse);
+                        y = get_mouse_y(&mouse);
+                        button = get_button(&mouse);
+                        sprintf(str, "%x %d %d", button, x, y);
                     }
                     break;
                 case FromKeyBoard:

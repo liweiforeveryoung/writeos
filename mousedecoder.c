@@ -3,9 +3,8 @@
 //
 
 #include "mousedecoder.h"
-#include "global.h"
 
-unsigned char *recv_data(struct MouseDecoder *m, unsigned char datum) {
+bool recv_data(struct MouseDecoder *m, unsigned char datum) {
     // 见 readme
     switch (m->status) {
         case 0:
@@ -14,23 +13,41 @@ unsigned char *recv_data(struct MouseDecoder *m, unsigned char datum) {
             }
             break;
         case 1:
-            m->buffer[0] = datum;
+            m->flag = datum;
             m->status = 2;
             break;
         case 2:
-            m->buffer[1] = datum;
+            if ((m->flag & 0x10) != 0) {
+                datum |= 0xffffff00;    // todo 应该用 int 还是用 unsigned char
+            }
+            m->x = datum;
             m->status = 3;
             break;
         case 3:
-            m->buffer[2] = datum;
+            if ((m->flag & 0x20) != 0) {
+                datum |= 0xffffff00;    // todo 应该用 int 还是用 unsigned char
+            }
+            m->y = -datum;  // 标与屏幕的y方向正好相反
             m->status = 1;
-            return m->buffer;
+            return true;
         default:
             break;
     }
-    return nullptr;
+    return false;
 }
 
 void init_mouse(struct MouseDecoder *m) {
     m->status = 0;
+}
+
+enum Button get_button(struct MouseDecoder *m) {
+    return m->flag & 0x07;
+}
+
+unsigned char get_mouse_x(struct MouseDecoder *m) {
+    return m->x;
+}
+
+unsigned char get_mouse_y(struct MouseDecoder *m) {
+    return m->y;
 }
