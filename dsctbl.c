@@ -14,18 +14,25 @@ void set_segment_desc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int bas
     sd->base_high = (base >> 24) & 0xff;
 }
 
+const int AR_DATA32_RW = 0x4092;
+const int AR_CODE32_ER = 0x409a;
+const int LIMIT_BOTPAK = 0x0007ffff;
+const int ADR_BOTPAK = 0x00280000;
+const int LIMIT_GDT = 0x0000ffff;
+const int ADR_GDT = 0x00270000;
+
 // 初始化 global descriptor table（段表）
 void init_gdt() {
     // gdt 的地址
-    struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) 0x00270000;
+    struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_GDT;
     // init all segment descriptors
     int i;
     for (i = 0; i < 8192; ++i) {
         set_segment_desc(gdt + i, 0, 0, 0);
     }
-    set_segment_desc(gdt + 1, 0xffffffff, 0x00000000, 0x4092);
-    set_segment_desc(gdt + 2, 0x0007ffff, 0x00280000, 0x409a);
-    load_gdtr(0xffff, (int) gdt);
+    set_segment_desc(gdt + 1, 0xffffffff, 0x00000000, AR_DATA32_RW);
+    set_segment_desc(gdt + 2, LIMIT_BOTPAK, ADR_BOTPAK, AR_CODE32_ER);
+    load_gdtr(LIMIT_GDT, (int) gdt);
 }
 
 void set_interrupt_desc(struct INTERRUPT_DESCRIPTOR *id, int offset, int selector, int ar) {
