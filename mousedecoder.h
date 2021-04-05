@@ -10,8 +10,8 @@
 struct MouseDecoder {
     unsigned char status;
     unsigned char flag;
-    unsigned char x;
-    unsigned char y;
+    short x;
+    short y;
 };
 
 // 接收一个数据，如果好了会返回 true,否则返回 false
@@ -29,8 +29,8 @@ enum Button {
 
 enum Button get_button(struct MouseDecoder *m);
 
-unsigned char get_mouse_x(struct MouseDecoder *m);
+short get_mouse_x(struct MouseDecoder *m);
 
-unsigned char get_mouse_y(struct MouseDecoder *m);
+short get_mouse_y(struct MouseDecoder *m);
 
 #endif //WRITEOS_MOUSEDECODER_H

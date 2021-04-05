@@ -17,17 +17,18 @@ bool recv_data(struct MouseDecoder *m, unsigned char datum) {
             m->status = 2;
             break;
         case 2:
-            if ((m->flag & 0x10) != 0) {
-                datum |= 0xffffff00;    // todo 应该用 int 还是用 unsigned char
-            }
             m->x = datum;
+            if ((m->flag & 0x10) != 0) {
+                m->x |= 0xff00;
+            }
             m->status = 3;
             break;
         case 3:
+            m->y = datum;  // 标与屏幕的y方向正好相反
             if ((m->flag & 0x20) != 0) {
-                datum |= 0xffffff00;    // todo 应该用 int 还是用 unsigned char
+                m->y |= 0xff00;
             }
-            m->y = -datum;  // 标与屏幕的y方向正好相反
+            m->y = -(m->y);
             m->status = 1;
             return true;
         default:
@@ -44,10 +45,10 @@ enum Button get_button(struct MouseDecoder *m) {
     return m->flag & 0x07;
 }
 
-unsigned char get_mouse_x(struct MouseDecoder *m) {
+short get_mouse_x(struct MouseDecoder *m) {
     return m->x;
 }
 
-unsigned char get_mouse_y(struct MouseDecoder *m) {
+short get_mouse_y(struct MouseDecoder *m) {
     return m->y;
 }
