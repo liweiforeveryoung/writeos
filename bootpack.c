@@ -143,7 +143,7 @@ unsigned int mem_test_sub(unsigned int start, unsigned int end) {
     for (i = start; i <= end; i += 0x1000) {
         p = (unsigned int *) (i + 0xffc);   // 读取末尾的 1kb
         old = *p;
-        if (!memory_is_valid(p)) {
+        if (!asm_memory_is_valid(p)) {
             break;
         }
         *p = old;
