@@ -12,6 +12,7 @@ GLOBAL _io_load_eflags,_io_store_eflags
 GLOBAL _io_in8,_io_in16,_io_in32
 GLOBAL _io_out8,_io_out16,_io_out32
 GLOBAL _load_gdtr, _load_idtr
+GLOBAL _load_cr0,_store_cr0
 GLOBAL _asm_int_handler21,_asm_int_handler2c,_asm_int_handler27
 EXTERN _int_handler21,_int_handler2c,_int_handler27
 
@@ -155,3 +156,12 @@ _asm_int_handler27:
      POP     DS
      POP     ES
      IRETD
+
+_load_cr0:		; int load_cr0(void);
+		MOV		EAX,CR0
+		RET
+
+_store_cr0:		; void store_cr0(int cr0);
+		MOV		EAX,[ESP+4]
+		MOV		CR0,EAX
+		RET

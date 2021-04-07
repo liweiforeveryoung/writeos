@@ -38,4 +38,8 @@ void load_gdtr(int limit, int addr);
 // 中段向量
 void load_idtr(int limit, int addr);
 
+int load_cr0(void);
+
+void store_cr0(int cr0);
+
 #endif //WRITEOS_NASKFUNC_H
