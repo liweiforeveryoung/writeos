@@ -887,3 +887,85 @@ IRQ-12是从PIC的第4号（从PIC相当于IRQ-08～IRQ-15），首先要通知I
 0x00400000 - : 空
 ```
 
+##### 第九天
+
+###### 内存容量检查
+
+第一次失败：
+
+原始代码：
+
+```c
+bool memory_is_valid(unsigned int *pMemory) {
+    unsigned int pat0 = 0xaa55aa55, pat1 = 0x55aa55aa;
+    *pMemory = pat0;
+    *pMemory ^= 0xffffffff;
+    if (*pMemory != pat1) {
+        return false;
+    }
+    *pMemory ^= 0xffffffff;
+    if (*pMemory != pat0) {
+        return false;
+    }
+    return true;
+}
+```
+
+生成的汇编代码：
+
+```assembly
+PUSH	EBP
+MOV	EBP,ESP
+MOV	EAX,DWORD [8+EBP]
+MOV	DWORD [EAX],-1437226411
+MOV	EAX,1
+POP	EBP
+RET
+```
+
+-1437226411 即 0xAA55AA55。
+
+可以看出，编译器将 `memory_is_valid` 优化成了这个样子：
+
+```c
+bool memory_is_valid(unsigned int *pMemory) {
+    *pMemory = 0xaa55aa55;
+    return true;
+}
+```
+
+###### 自己亲手写汇编
+
+自己写的汇编 ~
+
+```assembly
+_asm_memory_is_valid:   ; bool asm_memory_is_valid(unsigned int *pMemory)
+        PUSH	EBP
+        MOV	EBP,ESP
+        MOV	EAX,DWORD [8+EBP]
+
+        PUSH ECX
+
+        MOV	DWORD [EAX],0xaa55aa55  ; *pMemory = 0xaa55aa55
+        MOV	ECX,[EAX]               ;  temp = *pMemory
+        XOR ECX,0xffffffff          ;  temp ^= 0xffffffff
+        MOV [EAX],ECX               ; *pMemory = temp
+        MOV	ECX,[EAX]               ;  temp = *pMemory
+        CMP ECX,0x55aa55aa          ; if (temp != 0x55aa55aa)
+        JNE not_valid               ;       return 0
+        XOR ECX,0xffffffff          ;  temp ^= 0xffffffff
+        MOV [EAX],ECX               ;  *pMemory = temp
+        MOV ECX,[EAX]               ;  temp = *pMemory
+        CMP ECX,0xaa55aa55          ; if (temp != 0xaa55aa55)
+        JNE not_valid               ;      return 0
+        MOV EAX,1                   ;  return 1
+        JMP return
+   not_valid:
+        MOV EAX,0
+   return:
+        POP ECX
+        POP	EBP
+        RET
+```
+
+现在得到的结果如愿为 32MB 了。

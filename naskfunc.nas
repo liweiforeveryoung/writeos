@@ -14,6 +14,7 @@ GLOBAL _io_out8,_io_out16,_io_out32
 GLOBAL _load_gdtr, _load_idtr
 GLOBAL _load_cr0,_store_cr0
 GLOBAL _asm_int_handler21,_asm_int_handler2c,_asm_int_handler27
+GLOBAL _asm_memory_is_valid
 EXTERN _int_handler21,_int_handler2c,_int_handler27
 
 ; 以下是实际的函数
@@ -165,3 +166,32 @@ _store_cr0:		; void store_cr0(int cr0);
 		MOV		EAX,[ESP+4]
 		MOV		CR0,EAX
 		RET
+
+_asm_memory_is_valid:   ; bool asm_memory_is_valid(unsigned int *pMemory)
+        PUSH	EBP
+        MOV	EBP,ESP
+        MOV	EAX,DWORD [8+EBP]
+
+        PUSH ECX
+
+        MOV	DWORD [EAX],0xaa55aa55  ; *pMemory = 0xaa55aa55
+        MOV	ECX,[EAX]               ;  temp = *pMemory
+        XOR ECX,0xffffffff          ;  temp ^= 0xffffffff
+        MOV [EAX],ECX               ; *pMemory = temp
+        MOV	ECX,[EAX]               ;  temp = *pMemory
+        CMP ECX,0x55aa55aa          ; if (temp != 0x55aa55aa)
+        JNE not_valid               ;       return 0
+        XOR ECX,0xffffffff          ;  temp ^= 0xffffffff
+        MOV [EAX],ECX               ;  *pMemory = temp
+        MOV ECX,[EAX]               ;  temp = *pMemory
+        CMP ECX,0xaa55aa55          ; if (temp != 0xaa55aa55)
+        JNE not_valid               ;      return 0
+        MOV EAX,1                   ;  return 1
+        JMP return
+   not_valid:
+        MOV EAX,0
+   return:
+        POP ECX
+        POP	EBP
+        RET
+

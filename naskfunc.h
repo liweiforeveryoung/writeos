@@ -5,6 +5,8 @@
 #ifndef WRITEOS_NASKFUNC_H
 #define WRITEOS_NASKFUNC_H
 
+#include "global.h"
+
 void io_hlt(void);
 
 // 禁用中断
@@ -41,5 +43,7 @@ void load_idtr(int limit, int addr);
 int load_cr0(void);
 
 void store_cr0(int cr0);
+
+bool asm_memory_is_valid(unsigned int *pMemory);
 
 #endif //WRITEOS_NASKFUNC_H
