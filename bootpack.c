@@ -11,6 +11,8 @@
 #include "kbc.h"
 #include "mousedecoder.h"
 
+unsigned int mem_test(unsigned int start, unsigned int end);
+
 struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x00000ff0;
 
 struct KeyBuffer Key_buffer;
@@ -36,6 +38,10 @@ void HariMain(void) {
     init_mouse_cursor8(mouse, COLOR_WHITE);
     print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, MouseWidth, MouseHeight, mouse);
 
+    unsigned int i;
+    i = mem_test(0x00400000, 0xbfffffff) / (1024 * 1024);
+    sprintf(s, "memory %dMB", i);
+    print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 64, 64, s, COLOR_BLACK);
     init_keyboard();
     enable_mouse();
     run();
@@ -93,4 +99,68 @@ void run() {
             io_stihlt();    // 原因见 readme
         }
     }
+}
+
+#define E_FLAGS_AC_BIT      0x00040000
+#define CR0_CACHE_DISABLE   0x60000000
+
+unsigned int mem_test_sub(unsigned int start, unsigned int end);
+
+bool memory_is_valid(unsigned int *pMemory);
+
+unsigned int mem_test(unsigned int start, unsigned int end) {
+    char flg486 = 0;
+    unsigned int e_flag, cr0, i;
+    // 确认 cpu 是 386 还是 486 以上的
+    e_flag = io_load_eflags();
+    e_flag |= E_FLAGS_AC_BIT;       // ac-bit = 1
+    io_store_eflags(e_flag);
+    e_flag = io_load_eflags();
+    if ((e_flag & E_FLAGS_AC_BIT) != 0) {
+        // 如果是 386，即使设定 ac = 1，ac的值还是会自动回到 0
+        flg486 = 1;
+    }
+    e_flag &= ~E_FLAGS_AC_BIT;  // ac-bit = 0
+    io_store_eflags(e_flag);
+
+    // cpu 386 没有 cache
+    if (flg486 != 0) {
+        cr0 = load_cr0();
+        cr0 |= CR0_CACHE_DISABLE;   // 禁止缓存
+        store_cr0(cr0);
+    }
+    i = mem_test_sub(start, end);
+    if (flg486 != 0) {
+        cr0 = load_cr0();
+        cr0 &= ~CR0_CACHE_DISABLE;   // 禁止缓存
+        store_cr0(cr0);
+    }
+    return i;
+}
+
+unsigned int mem_test_sub(unsigned int start, unsigned int end) {
+    unsigned int i, *p, old;
+    for (i = start; i <= end; i += 0x1000) {
+        p = (unsigned int *) (i + 0xffc);   // 读取末尾的 1kb
+        old = *p;
+        if (!memory_is_valid(p)) {
+            break;
+        }
+        *p = old;
+    }
+    return i;
+}
+
+bool memory_is_valid(unsigned int *pMemory) {
+    unsigned int pat0 = 0xaa55aa55, pat1 = 0x55aa55aa;
+    *pMemory = pat0;
+    *pMemory ^= 0xffffffff;
+    if (*pMemory != pat1) {
+        return false;
+    }
+    *pMemory ^= 0xffffffff;
+    if (*pMemory != pat0) {
+        return false;
+    }
+    return true;
 }
