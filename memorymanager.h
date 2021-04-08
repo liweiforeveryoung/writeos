@@ -28,4 +28,7 @@ unsigned int memory_alloc(struct MemoryManager *manager, unsigned int size);
 // 报告空余内存大小的合计
 unsigned int memory_total(struct MemoryManager *manager);
 
+// 归还内存
+bool memory_free(struct MemoryManager *manager, unsigned int addr, unsigned int size);
+
 #endif //WRITEOS_MEMORYMANAGER_H
