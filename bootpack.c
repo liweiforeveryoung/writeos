@@ -10,6 +10,7 @@
 #include "int.h"
 #include "kbc.h"
 #include "mousedecoder.h"
+#include "memorymanager.h"
 
 unsigned int mem_test(unsigned int start, unsigned int end);
 
@@ -20,6 +21,8 @@ struct KeyBuffer Key_buffer;
 const short MouseWidth = 16;
 const short MouseHeight = 16;
 char mouse[16 * 16];
+
+#define MEMORY_MANAGER_ADDR            0x003c0000
 
 void HariMain(void) {
     init_gdt();
@@ -38,9 +41,13 @@ void HariMain(void) {
     init_mouse_cursor8(mouse, COLOR_WHITE);
     print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, MouseWidth, MouseHeight, mouse);
 
-    unsigned int i;
-    i = mem_test(0x00400000, 0xbfffffff) / (1024 * 1024);
-    sprintf(s, "memory %dMB", i);
+    const unsigned int memory_begin_addr = 0x00400000;
+    unsigned int total_memory = mem_test(memory_begin_addr, 0xbfffffff);
+    struct MemoryManager *memory_manager = (struct MemoryManager *) MEMORY_MANAGER_ADDR;
+    manager_init(memory_manager);
+    memory_free(memory_manager, 0x00001000, 0x0009e000); /* 0x00001000 - 0x0009e000 */
+    memory_free(memory_manager, memory_begin_addr, total_memory - memory_begin_addr);
+    sprintf(s, "memory %d mb,free: %dkb", total_memory / (1024 * 1024), memory_total(memory_manager) / 1024);
     print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 64, 64, s, COLOR_BLACK);
     init_keyboard();
     enable_mouse();
