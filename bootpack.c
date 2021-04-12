@@ -15,6 +15,8 @@
 
 unsigned int mem_test(unsigned int start, unsigned int end);
 
+void init_mouse_sheet(struct SheetControl *sheet_control);
+
 struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x00000ff0;
 
 struct KeyBuffer Key_buffer;
@@ -25,6 +27,8 @@ const short MouseHeight = 16;
 #define MEMORY_MANAGER_ADDR            0x003c0000
 
 void init_manager(struct MemoryManager *manager);
+
+struct Sheet *mouse_sheet;
 
 void HariMain(void) {
     init_gdt();
@@ -48,18 +52,23 @@ void HariMain(void) {
     set_sheet_color(sheet_2, COL8_FF0000);
     sheet_control_draw(sheet_control);
 
-    struct Sheet *mouse_sheet = create_sheet(sheet_control);
-    init_sheet(mouse_sheet, 0, 0, MouseWidth, MouseHeight);
-    set_sheet_color(mouse_sheet, COLOR_BLACK);
-
-    init_mouse_cursor8(mouse_sheet->buffer, COLOR_WHITE);
+    init_mouse_sheet(sheet_control);
     // print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, MouseWidth, MouseHeight, mouse);
     // sprintf(s, "memory %d mb,free: %dkb", total_memory / (1024 * 1024), memory_total(global_memory_manager) / 1024);
     // print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 64, 64, s, COLOR_BLACK);
     init_keyboard();
     enable_mouse();
-    run(mouse_sheet, sheet_control);
+    run(sheet_control);
 }
+
+// 初始化鼠标图层
+void init_mouse_sheet(struct SheetControl *sheet_control) {
+    mouse_sheet = create_sheet(sheet_control);
+    init_sheet(mouse_sheet, 0, 0, MouseWidth, MouseHeight);
+    set_sheet_color(mouse_sheet, COLOR_BLACK);
+    init_mouse_cursor8(mouse_sheet->buffer, COLOR_WHITE);
+}
+
 
 void init_manager(struct MemoryManager *manager) {
     manager_init(global_memory_manager);
@@ -70,7 +79,7 @@ void init_manager(struct MemoryManager *manager) {
 }
 
 
-void run(struct Sheet *mouse_sheet, struct SheetControl *control) {
+void run(struct SheetControl *control) {
     unsigned char input, type;
     bool mouse_is_ready;
     short mouse_x, mouse_y;
