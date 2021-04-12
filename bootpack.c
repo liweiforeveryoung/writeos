@@ -41,17 +41,20 @@ void HariMain(void) {
                                                            Boot_Info_Ptr->screenY);
 
     struct Sheet *root_sheet = create_sheet(sheet_control);
-    init_sheet(root_sheet, 0, 0, Boot_Info_Ptr->screenX, Boot_Info_Ptr->screenY, COLOR_WHITE);
+    init_sheet(root_sheet, 0, 0, Boot_Info_Ptr->screenX, Boot_Info_Ptr->screenY);
+    set_sheet_color(root_sheet, COLOR_WHITE);
 
     struct Sheet *sheet_2 = create_sheet(sheet_control);
-    init_sheet(sheet_2, 20, 20, 100, 100, COL8_FF0000);
+    init_sheet(sheet_2, 20, 20, 100, 100);
+    set_sheet_color(sheet_2, COL8_FF0000);
     sheet_control_draw(sheet_control);
-    init_mouse_cursor8(mouse, COLOR_WHITE);
+
     struct Sheet *mouse_sheet = create_sheet(sheet_control);
-    mouse_sheet->color = COLOR_BLACK;
+    init_sheet(mouse_sheet, 0, 0, MouseWidth, MouseHeight);
+    set_sheet_color(mouse_sheet, COLOR_BLACK);
+
+    init_mouse_cursor8(mouse, COLOR_WHITE);
     // print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, MouseWidth, MouseHeight, mouse);
-    mouse_sheet->width = MouseWidth;
-    mouse_sheet->height = MouseHeight;
     // sprintf(s, "memory %d mb,free: %dkb", total_memory / (1024 * 1024), memory_total(global_memory_manager) / 1024);
     // print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 64, 64, s, COLOR_BLACK);
     init_keyboard();
