@@ -7,6 +7,7 @@
 
 #include <stdio.h>
 #include "global.h"
+#include "sheet.h"
 
 struct BootInfo {
     char cyls;          // 磁盘的柱面数， ipl10.nas 中将柱面数写入了该地址
@@ -20,6 +21,6 @@ struct BootInfo {
 extern struct BootInfo *const Boot_Info_Ptr;
 
 // 跑起来 yo yo yo checkout
-void run();
+void run(struct Sheet *mouse_sheet, struct SheetControl *control);
 
 #endif //WRITEOS_BOOTPACK_H

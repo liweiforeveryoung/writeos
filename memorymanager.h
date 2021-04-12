@@ -8,6 +8,7 @@
 #include "global.h"
 
 #define MEMORY_MANAGER_FREES        4090
+
 struct FreeInfo {
     unsigned int addr;
     unsigned int size;
@@ -31,4 +32,5 @@ unsigned int memory_total(struct MemoryManager *manager);
 // 归还内存
 bool memory_free(struct MemoryManager *manager, unsigned int addr, unsigned int size);
 
+extern struct MemoryManager *global_memory_manager;
 #endif //WRITEOS_MEMORYMANAGER_H
