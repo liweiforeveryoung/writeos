@@ -11,6 +11,7 @@
 #include "kbc.h"
 #include "mousedecoder.h"
 #include "memorymanager.h"
+#include "sheet.h"
 
 unsigned int mem_test(unsigned int start, unsigned int end);
 
@@ -24,6 +25,8 @@ char mouse[16 * 16];
 
 #define MEMORY_MANAGER_ADDR            0x003c0000
 
+void init_manager(struct MemoryManager *manager);
+
 void HariMain(void) {
     init_gdt();
     init_idt();
@@ -31,31 +34,41 @@ void HariMain(void) {
     init_key_buffer(&Key_buffer);
     io_sti();       // todo 为什么把 sti 放在这里可以达到效果，明明 在 init_palette 里调用了 io_cli，按理按照 cli 之后就不该会鼠标有反应了
     init_palette();
-    set_white_background();
+    init_manager(global_memory_manager);
     char s[40] = {};
     sprintf(s, "screenX = %d", Boot_Info_Ptr->screenX);
-    box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 20, 20, 120, 120, COL8_FF0000);
-    box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 70, 50, 170, 150, COL8_00FF00);
-    box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 120, 80, 220, 180, COL8_0000FF);
-    print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 8, 8, s, COLOR_BLACK);
-    init_mouse_cursor8(mouse, COLOR_WHITE);
-    print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, MouseWidth, MouseHeight, mouse);
+    struct SheetControl *sheet_control = new_sheet_control(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX,
+                                                           Boot_Info_Ptr->screenY);
 
-    const unsigned int memory_begin_addr = 0x00400000;
-    unsigned int total_memory = mem_test(memory_begin_addr, 0xbfffffff);
-    struct MemoryManager *memory_manager = (struct MemoryManager *) MEMORY_MANAGER_ADDR;
-    manager_init(memory_manager);
-    memory_free(memory_manager, 0x00001000, 0x0009e000); /* 0x00001000 - 0x0009e000 */
-    memory_free(memory_manager, memory_begin_addr, total_memory - memory_begin_addr);
-    sprintf(s, "memory %d mb,free: %dkb", total_memory / (1024 * 1024), memory_total(memory_manager) / 1024);
-    print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 64, 64, s, COLOR_BLACK);
+    struct Sheet *root_sheet = create_sheet(sheet_control);
+    init_sheet(root_sheet, 0, 0, Boot_Info_Ptr->screenX, Boot_Info_Ptr->screenY, COLOR_WHITE);
+
+    struct Sheet *sheet_2 = create_sheet(sheet_control);
+    init_sheet(sheet_2, 20, 20, 100, 100, COL8_FF0000);
+    sheet_control_draw(sheet_control);
+    init_mouse_cursor8(mouse, COLOR_WHITE);
+    struct Sheet *mouse_sheet = create_sheet(sheet_control);
+    mouse_sheet->color = COLOR_BLACK;
+    // print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, MouseWidth, MouseHeight, mouse);
+    mouse_sheet->width = MouseWidth;
+    mouse_sheet->height = MouseHeight;
+    // sprintf(s, "memory %d mb,free: %dkb", total_memory / (1024 * 1024), memory_total(global_memory_manager) / 1024);
+    // print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 64, 64, s, COLOR_BLACK);
     init_keyboard();
     enable_mouse();
-    run();
+    run(mouse_sheet, sheet_control);
+}
+
+void init_manager(struct MemoryManager *manager) {
+    manager_init(global_memory_manager);
+    const unsigned int memory_begin_addr = 0x00400000;
+    unsigned int total_memory = mem_test(memory_begin_addr, 0xbfffffff);
+    memory_free(global_memory_manager, 0x00001000, 0x0009e000); /* 0x00001000 - 0x0009e000 */
+    memory_free(global_memory_manager, memory_begin_addr, total_memory - memory_begin_addr);
 }
 
 
-void run() {
+void run(struct Sheet *mouse_sheet, struct SheetControl *control) {
     unsigned char input, type;
     bool mouse_is_ready;
     short mouse_x, mouse_y;
@@ -88,16 +101,18 @@ void run() {
                         y = max_short(y, 0);
 
                         button = get_button(&mouse_decoder);
-                        set_white_background();
-                        print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, x, y, MouseWidth,
-                                    MouseHeight, mouse);
+                        mouse_sheet->x0 = x;
+                        mouse_sheet->y0 = y;
+                        sheet_control_draw(control);
+                        // print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, x, y, MouseWidth,
+                        //             MouseHeight, mouse);
                     }
 
                     break;
                 case FromKeyBoard:
-                    sprintf(str, "k %x", input);
-                    box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 20, 20, 200, 200, COLOR_WHITE);
-                    print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 20, 20, str, COLOR_BLACK);
+                    // sprintf(str, "k %x", input);
+                    // box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 20, 20, 200, 200, COLOR_WHITE);
+                    // print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 20, 20, str, COLOR_BLACK);
                     break;
                 default:
             }

@@ -4,6 +4,9 @@
 
 #include "memorymanager.h"
 
+#define MEMORY_MANAGER_ADDR 0x003c0000
+struct MemoryManager *global_memory_manager = (struct MemoryManager *) MEMORY_MANAGER_ADDR;
+
 void manager_init(struct MemoryManager *manager) {
     manager->frees = 0;
     manager->lost_size = 0;
