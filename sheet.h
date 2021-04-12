@@ -11,7 +11,7 @@ struct Sheet {
     short y0;   // 左上角 y
     short width;// 宽度
     short height;// 高度
-    unsigned char *buffer;
+    char *buffer;
 };
 
 struct SheetControl {

@@ -21,7 +21,6 @@ struct KeyBuffer Key_buffer;
 
 const short MouseWidth = 16;
 const short MouseHeight = 16;
-char mouse[16 * 16];
 
 #define MEMORY_MANAGER_ADDR            0x003c0000
 
@@ -53,7 +52,7 @@ void HariMain(void) {
     init_sheet(mouse_sheet, 0, 0, MouseWidth, MouseHeight);
     set_sheet_color(mouse_sheet, COLOR_BLACK);
 
-    init_mouse_cursor8(mouse, COLOR_WHITE);
+    init_mouse_cursor8(mouse_sheet->buffer, COLOR_WHITE);
     // print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, MouseWidth, MouseHeight, mouse);
     // sprintf(s, "memory %d mb,free: %dkb", total_memory / (1024 * 1024), memory_total(global_memory_manager) / 1024);
     // print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 64, 64, s, COLOR_BLACK);
