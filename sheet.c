@@ -13,7 +13,7 @@
 int get_color_from_sheet(struct Sheet *sheet, short x, short y) {
     if ((x >= sheet->x0) && (x < sheet->x0 + sheet->width) &&
         (y >= sheet->y0) && (y < sheet->y0 + sheet->height)) {
-        return sheet->color;
+        return sheet->buffer[(y - sheet->y0) * sheet->width + x - sheet->x0];
     }
     return transparent;
 }
@@ -74,12 +74,22 @@ struct Sheet *create_sheet(struct SheetControl *control) {
 }
 
 // 初始化 sheet
-void init_sheet(struct Sheet *sheet, short x0, short y0, short width, short height, int color) {
+void init_sheet(struct Sheet *sheet, short x0, short y0, short width, short height) {
     sheet->x0 = x0;
     sheet->y0 = y0;
     sheet->width = width;
     sheet->height = height;
-    sheet->color = color;
+    sheet->buffer = (unsigned char *) memory_alloc(global_memory_manager, width * height);
+}
+
+// 将 sheet 的每个像素都设置为相同的颜色
+void set_sheet_color(struct Sheet *sheet, unsigned char color) {
+    short x, y;
+    for (x = 0; x < sheet->width; x++) {
+        for (y = 0; y < sheet->height; ++y) {
+            sheet->buffer[y * sheet->width + x] = color;
+        }
+    }
 }
 
 // 删除一个图层
