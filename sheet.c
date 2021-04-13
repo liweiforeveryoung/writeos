@@ -7,6 +7,8 @@
 #include "memorymanager.h"
 #include "graphic.h"
 
+void sheet_control_draw_sub_window(struct SheetControl *control, short x0, short y0, short x1, short y1);
+
 char get_color_from_sheet(struct Sheet *sheet, short x, short y) {
     if ((x >= sheet->x0) && (x < sheet->x0 + sheet->width) &&
         (y >= sheet->y0) && (y < sheet->y0 + sheet->height)) {
@@ -40,13 +42,23 @@ void refresh_sheet(struct Sheet *sheet) {
     sheet_control_draw(sheet->m_pControl);
 }
 
+// 设置图层的坐标
+void set_sheet_pos(struct Sheet *sheet, short new_x, short new_y) {
+
+}
+
 void sheet_control_draw(struct SheetControl *control) {
+    sheet_control_draw_sub_window(control, 0, 0, control->screen_width, control->screen_height);
+}
+
+// 重新绘制某一块区域
+void sheet_control_draw_sub_window(struct SheetControl *control, short x0, short y0, short x1, short y1) {
     short x = 0;
     short y = 0;
     int level = 0;
     int color;
-    for (x = 0; x < control->screen_width; ++x) {
-        for (y = 0; y < control->screen_height; ++y) {
+    for (x = x0; x < x1; ++x) {
+        for (y = y0; y < y1; ++y) {
             color = COLOR_TRANSPARENT;
             for (level = 0; level < control->topSheetIndex; level++) {
                 struct Sheet *sheet = control->sheets[level];
