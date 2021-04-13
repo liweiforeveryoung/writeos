@@ -43,12 +43,10 @@ void HariMain(void) {
     struct SheetControl *sheet_control = new_sheet_control(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX,
                                                            Boot_Info_Ptr->screenY);
 
-    struct Sheet *root_sheet = create_sheet(sheet_control);
-    init_sheet(root_sheet, 0, 0, Boot_Info_Ptr->screenX, Boot_Info_Ptr->screenY);
+    struct Sheet *root_sheet = create_sheet(sheet_control, 0, 0, Boot_Info_Ptr->screenX, Boot_Info_Ptr->screenY);
     set_sheet_color(root_sheet, COLOR_WHITE);
 
-    struct Sheet *red_sheet = create_sheet(sheet_control);
-    init_sheet(red_sheet, 20, 20, 100, 100);
+    struct Sheet *red_sheet = create_sheet(sheet_control, 20, 20, 100, 100);
     set_sheet_color(red_sheet, COL8_FF0000);
     sheet_control_draw(sheet_control);
 
@@ -60,9 +58,7 @@ void HariMain(void) {
 
 // 初始化鼠标图层
 void init_mouse_sheet(struct SheetControl *sheet_control) {
-    mouse_sheet = create_sheet(sheet_control);
-    init_sheet(mouse_sheet, 0, 0, MouseWidth, MouseHeight);
-    set_sheet_color(mouse_sheet, COLOR_BLACK);
+    mouse_sheet = create_sheet(sheet_control, 0, 0, MouseWidth, MouseHeight);
     init_mouse_cursor8(mouse_sheet->buffer, COLOR_TRANSPARENT);
 }
 

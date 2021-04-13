@@ -32,10 +32,7 @@ struct SheetControl *new_sheet_control(unsigned char *vRam, short screen_height,
 void sheet_control_draw(struct SheetControl *control);
 
 // 在最上层创建一个图层
-struct Sheet *create_sheet(struct SheetControl *control);
-
-// 初始化 sheet
-void init_sheet(struct Sheet *sheet, short x0, short y0, short width, short height);
+struct Sheet *create_sheet(struct SheetControl *control, short x0, short y0, short width, short height);
 
 // 将 sheet 的每个像素都设置为相同的颜色
 void set_sheet_color(struct Sheet *sheet, char color);
