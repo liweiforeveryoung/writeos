@@ -3,7 +3,6 @@
 //
 
 #include "sheet.h"
-#include "global.h"
 #include "memorymanager.h"
 #include "graphic.h"
 
@@ -44,6 +43,10 @@ void refresh_sheet(struct Sheet *sheet) {
 
 // 设置图层的坐标
 void set_sheet_pos(struct Sheet *sheet, short new_x, short new_y) {
+    if (sheet->fixed) {
+        // 固定的 sheet 无法被移动
+        return;
+    }
     short x0 = min_short(sheet->x0, new_x);
     short x1 = max_short(sheet->x0, new_x) + sheet->width;
     short y0 = min_short(sheet->y0, new_y);
@@ -92,6 +95,7 @@ struct Sheet *create_sheet(struct SheetControl *control, short x0, short y0, sho
         sheet->height = height;
         sheet->buffer = (char *) memory_alloc(global_memory_manager, width * height);
         sheet->m_pControl = control;
+        sheet->fixed = false;
         control->sheets[control->topSheetIndex] = sheet;
         control->topSheetIndex++;
         return sheet;
@@ -108,20 +112,73 @@ void set_sheet_color(struct Sheet *sheet, char color) {
     }
 }
 
-// 删除一个图层
-bool delete_sheet(struct SheetControl *control, struct Sheet *sheet) {
-    // todo
-    return false;
+// 是否图层申请的内存空间
+void free_sheet(struct Sheet *sheet) {
+    memory_free(global_memory_manager, (unsigned int) sheet->buffer, sheet->width * sheet->height);
 }
+
+// 寻找 sheet 位置，如果找不到的话就返回 -1
+int get_sheet_level(struct Sheet *sheet) {
+    struct SheetControl *control = sheet->m_pControl;
+    int level = 0;
+    for (; level < control->topSheetIndex; ++level) {
+        if (control->sheets[level] == sheet) {
+            return level;
+        }
+    }
+    return -1;
+}
+
+// 删除一个图层
+bool delete_sheet(struct Sheet *sheet) {
+    // 先找到该 sheet
+    int sheetLevel = get_sheet_level(sheet);
+    if (sheetLevel == -1) {
+        return false;
+    } else {
+        struct SheetControl *control = sheet->m_pControl;
+        // 之后将该 sheet 上面的 sheets 向下移动
+        for (; sheetLevel < control->topSheetIndex - 1; ++sheetLevel) {
+            control[sheetLevel] = control[sheetLevel + 1];
+        }
+        --control->topSheetIndex;
+        free_sheet(sheet);
+        return true;
+    }
+}
+
+bool move_sheet_to_level(struct Sheet *sheet, int dstLevel);
 
 // 将图层往上移动一层
 bool move_up_sheet(struct Sheet *sheet) {
-    // todo
-    return false;
+    return move_sheet_to_level(sheet, get_sheet_level(sheet) + 1);
 }
 
 // 将图层往下移动一层
 bool move_down_sheet(struct Sheet *sheet) {
-    // todo
-    return false;
+    return move_sheet_to_level(sheet, get_sheet_level(sheet) - 1);
+}
+
+// 将图层移动到指定的 level
+bool move_sheet_to_level(struct Sheet *sheet, int dstLevel) {
+    if (sheet->fixed) {
+        // 固定的 sheet 无法被移动
+        return false;
+    }
+    if (dstLevel >= sheet->m_pControl->topSheetIndex) {
+        dstLevel = sheet->m_pControl->topSheetIndex - 1;
+    }
+    if (dstLevel < 0) {
+        dstLevel = 0;
+    }
+    int originalLevel = get_sheet_level(sheet);
+    struct SheetControl *control = sheet->m_pControl;
+    for (; originalLevel < dstLevel; ++originalLevel) {
+        control->sheets[originalLevel] = control->sheets[originalLevel + 1];
+    }
+    for (; originalLevel > dstLevel; --originalLevel) {
+        control->sheets[originalLevel] = control->sheets[originalLevel - 1];
+    }
+    control->sheets[dstLevel] = sheet;
+    return true;
 }

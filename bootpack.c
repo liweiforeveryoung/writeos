@@ -60,6 +60,9 @@ void HariMain(void) {
 void init_mouse_sheet(struct SheetControl *sheet_control) {
     mouse_sheet = create_sheet(sheet_control, 0, 0, MouseWidth, MouseHeight);
     init_mouse_cursor8(mouse_sheet->buffer, COLOR_TRANSPARENT);
+    // 故意把 mouse_sheet 往下移动一层测试一下
+    move_down_sheet(mouse_sheet);
+    move_up_sheet(mouse_sheet);
 }
 
 
