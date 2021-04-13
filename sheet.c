@@ -44,7 +44,13 @@ void refresh_sheet(struct Sheet *sheet) {
 
 // 设置图层的坐标
 void set_sheet_pos(struct Sheet *sheet, short new_x, short new_y) {
-
+    short x0 = min_short(sheet->x0, new_x);
+    short x1 = max_short(sheet->x0, new_x) + sheet->width;
+    short y0 = min_short(sheet->y0, new_y);
+    short y1 = max_short(sheet->y0, new_y) + sheet->height;
+    sheet->x0 = new_x;
+    sheet->y0 = new_y;
+    sheet_control_draw_sub_window(sheet->m_pControl, x0, y0, x1, y1);
 }
 
 void sheet_control_draw(struct SheetControl *control) {

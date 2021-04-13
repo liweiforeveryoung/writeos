@@ -40,4 +40,7 @@ void set_sheet_color(struct Sheet *sheet, char color);
 // 刷新图层
 void refresh_sheet(struct Sheet *sheet);
 
+// 设置图层的坐标
+void set_sheet_pos(struct Sheet *sheet, short new_x, short new_y);
+
 #endif //WRITEOS_SHEET_H
