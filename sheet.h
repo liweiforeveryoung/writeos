@@ -4,6 +4,9 @@
 
 #ifndef WRITEOS_SHEET_H
 #define WRITEOS_SHEET_H
+
+#include "global.h"
+
 #define MaxSheets 256
 
 struct SheetControl;
@@ -14,6 +17,7 @@ struct Sheet {
     short width;// 宽度
     short height;// 高度
     char *buffer;
+    bool fixed;     // 图层是否的固定的，如果是固定的将无法拖动，以及上下移动
     struct SheetControl *m_pControl;    // 指向 control 的指针
 };
 
@@ -21,8 +25,8 @@ struct SheetControl {
     unsigned char *vRam;
     short screen_height;
     short screen_width;
-    int topSheetIndex;
-    struct Sheet *sheets[MaxSheets];
+    int topSheetIndex;  // 最高图层的下一个图层
+    struct Sheet *sheets[MaxSheets];    // todo 后续考虑用链表来存储图层信息
 };
 
 // 创建一个 sheet control
@@ -42,5 +46,10 @@ void refresh_sheet(struct Sheet *sheet);
 
 // 设置图层的坐标
 void set_sheet_pos(struct Sheet *sheet, short new_x, short new_y);
+
+// 将图层往上移动一层
+bool move_up_sheet(struct Sheet *sheet);
+// 将图层往下移动一层
+bool move_down_sheet(struct Sheet *sheet);
 
 #endif //WRITEOS_SHEET_H
