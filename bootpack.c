@@ -105,9 +105,7 @@ void run() {
                         y = max_short(y, 0);
 
                         button = get_button(&mouse_decoder);
-                        mouse_sheet->x0 = x;
-                        mouse_sheet->y0 = y;
-                        refresh_sheet(mouse_sheet);
+                        set_sheet_pos(mouse_sheet, x, y);
                         // print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, x, y, MouseWidth,
                         //             MouseHeight, mouse);
                     }
