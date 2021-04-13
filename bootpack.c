@@ -47,15 +47,15 @@ void HariMain(void) {
     init_sheet(root_sheet, 0, 0, Boot_Info_Ptr->screenX, Boot_Info_Ptr->screenY);
     set_sheet_color(root_sheet, COLOR_WHITE);
 
-    struct Sheet *sheet_2 = create_sheet(sheet_control);
-    init_sheet(sheet_2, 20, 20, 100, 100);
-    set_sheet_color(sheet_2, COL8_FF0000);
+    struct Sheet *red_sheet = create_sheet(sheet_control);
+    init_sheet(red_sheet, 20, 20, 100, 100);
+    set_sheet_color(red_sheet, COL8_FF0000);
     sheet_control_draw(sheet_control);
 
     init_mouse_sheet(sheet_control);
     init_keyboard();
     enable_mouse();
-    run(sheet_control);
+    run();
 }
 
 // 初始化鼠标图层
@@ -76,7 +76,7 @@ void init_manager() {
 }
 
 
-void run(struct SheetControl *control) {
+void run() {
     unsigned char input, type;
     bool mouse_is_ready;
     short mouse_x, mouse_y;
@@ -111,7 +111,7 @@ void run(struct SheetControl *control) {
                         button = get_button(&mouse_decoder);
                         mouse_sheet->x0 = x;
                         mouse_sheet->y0 = y;
-                        sheet_control_draw(control);
+                        refresh_sheet(mouse_sheet);
                         // print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, x, y, MouseWidth,
                         //             MouseHeight, mouse);
                     }

@@ -21,6 +21,6 @@ struct BootInfo {
 extern struct BootInfo *const Boot_Info_Ptr;
 
 // 跑起来 yo yo yo checkout
-void run(struct SheetControl *control);
+void run();
 
 #endif //WRITEOS_BOOTPACK_H

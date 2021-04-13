@@ -35,6 +35,11 @@ void free_sheet_control(struct SheetControl *control) {
     // todo
 }
 
+// 刷新图层
+void refresh_sheet(struct Sheet *sheet) {
+    sheet_control_draw(sheet->m_pControl);
+}
+
 void sheet_control_draw(struct SheetControl *control) {
     short x = 0;
     short y = 0;
@@ -66,6 +71,7 @@ struct Sheet *create_sheet(struct SheetControl *control) {
         struct Sheet *sheet = (struct Sheet *) memory_alloc(global_memory_manager, sizeof(struct Sheet));
         control->sheets[control->topSheetIndex] = sheet;
         control->topSheetIndex++;
+        sheet->m_pControl = control;
         return sheet;
     }
 }
