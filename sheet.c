@@ -63,26 +63,21 @@ void sheet_control_draw(struct SheetControl *control) {
 
 
 // 在最上层创建一个图层
-struct Sheet *create_sheet(struct SheetControl *control) {
-    // todo
+struct Sheet *create_sheet(struct SheetControl *control, short x0, short y0, short width, short height) {
     if (control->topSheetIndex == MaxSheets) {
         return nullptr;
     } else {
         struct Sheet *sheet = (struct Sheet *) memory_alloc(global_memory_manager, sizeof(struct Sheet));
+        sheet->x0 = x0;
+        sheet->y0 = y0;
+        sheet->width = width;
+        sheet->height = height;
+        sheet->buffer = (char *) memory_alloc(global_memory_manager, width * height);
+        sheet->m_pControl = control;
         control->sheets[control->topSheetIndex] = sheet;
         control->topSheetIndex++;
-        sheet->m_pControl = control;
         return sheet;
     }
-}
-
-// 初始化 sheet
-void init_sheet(struct Sheet *sheet, short x0, short y0, short width, short height) {
-    sheet->x0 = x0;
-    sheet->y0 = y0;
-    sheet->width = width;
-    sheet->height = height;
-    sheet->buffer = (char *) memory_alloc(global_memory_manager, width * height);
 }
 
 // 将 sheet 的每个像素都设置为相同的颜色
