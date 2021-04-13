@@ -5,6 +5,8 @@
 #ifndef WRITEOS_SHEET_H
 #define WRITEOS_SHEET_H
 #define MaxSheets 256
+
+struct SheetControl;
 // 图层
 struct Sheet {
     short x0;   // 左上角 x
@@ -12,6 +14,7 @@ struct Sheet {
     short width;// 宽度
     short height;// 高度
     char *buffer;
+    struct SheetControl *m_pControl;    // 指向 control 的指针
 };
 
 struct SheetControl {
@@ -36,5 +39,8 @@ void init_sheet(struct Sheet *sheet, short x0, short y0, short width, short heig
 
 // 将 sheet 的每个像素都设置为相同的颜色
 void set_sheet_color(struct Sheet *sheet, char color);
+
+// 刷新图层
+void refresh_sheet(struct Sheet *sheet);
 
 #endif //WRITEOS_SHEET_H
