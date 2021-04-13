@@ -69,7 +69,7 @@ void init_palette(void) {
     io_store_eflags(eFlags);
 }
 
-void box_fill8(unsigned char *vRam, int xSize, int x0, int y0, int x1, int y1, unsigned char c) {
+void box_fill8(char *vRam, short xSize, int x0, int y0, int x1, int y1, unsigned char c) {
     int x, y;
     for (y = y0; y <= y1; y++) {
         for (x = x0; x <= x1; x++)
@@ -77,19 +77,19 @@ void box_fill8(unsigned char *vRam, int xSize, int x0, int y0, int x1, int y1, u
     }
 }
 
-void print_char(unsigned char *vRam, short xSize, short x0, short y0, const char font, char color) {
+void print_char(char *vRam, short xSize, short x0, short y0, const char font, char color) {
     print_raw_char(vRam, xSize, x0, y0, getFont(font), color);
 }
 
 // 打印字体
-void print_raw_char(unsigned char *vRam, short xSize, short x0, short y0, const char *c, char color) {
+void print_raw_char(char *vRam, short xSize, short x0, short y0, const char *c, char color) {
     const short font_width = 8;
     const short font_height = 16;
     short x, y;
     for (y = y0; y < y0 + font_height; ++y) {
         unsigned char flag = 0x80;
         for (x = x0; x < x0 + font_width; ++x) {
-            unsigned char *fontAddr = vRam + y * xSize + x;
+            char *fontAddr = vRam + y * xSize + x;
             if ((c[y - y0] & flag) != 0) {
                 *fontAddr = color;
             }
@@ -98,7 +98,7 @@ void print_raw_char(unsigned char *vRam, short xSize, short x0, short y0, const 
     }
 }
 
-void print_str(unsigned char *vRam, short xSize, short x0, short y0, const char *string, char color) {
+void print_str(char *vRam, short xSize, short x0, short y0, const char *string, char color) {
     const char *pChar = string;
     while (*pChar != '\0') {
         print_char(vRam, xSize, x0, y0, *pChar, color);

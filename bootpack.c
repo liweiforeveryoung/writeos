@@ -17,6 +17,8 @@ unsigned int mem_test(unsigned int start, unsigned int end);
 
 void init_mouse_sheet(struct SheetControl *sheet_control);
 
+void make_window8(char *buf, short xSize, short ySize, char *title);
+
 struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x00000ff0;
 
 struct KeyBuffer Key_buffer;
@@ -48,6 +50,10 @@ void HariMain(void) {
 
     struct Sheet *red_sheet = create_sheet(sheet_control, 20, 20, 100, 100);
     set_sheet_color(red_sheet, COL8_FF0000);
+
+    struct Sheet *window = create_sheet(sheet_control, 20, 20, 160, 68);
+    set_sheet_color(window, COLOR_TRANSPARENT);
+    make_window8(window->buffer, 160, 68, "window");
     sheet_control_draw(sheet_control);
 
     init_mouse_sheet(sheet_control);
@@ -190,4 +196,54 @@ bool memory_is_valid(unsigned int *pMemory) {
         return false;
     }
     return true;
+}
+
+// 制作窗口
+void make_window8(char *buf, short xSize, short ySize, char *title) {
+    static char closebtn[14][16] = {
+            "OOOOOOOOOOOOOOO@",
+            "OQQQQQQQQQQQQQ$@",
+            "OQQQQQQQQQQQQQ$@",
+            "OQQQ@@QQQQ@@QQ$@",
+            "OQQQQ@@QQ@@QQQ$@",
+            "OQQQQQ@@@@QQQQ$@",
+            "OQQQQQQ@@QQQQQ$@",
+            "OQQQQQ@@@@QQQQ$@",
+            "OQQQQ@@QQ@@QQQ$@",
+            "OQQQ@@QQQQ@@QQ$@",
+            "OQQQQQQQQQQQQQ$@",
+            "OQQQQQQQQQQQQQ$@",
+            "O$$$$$$$$$$$$$$@",
+            "@@@@@@@@@@@@@@@@"
+    };
+    int x, y;
+    char c;
+    box_fill8(buf, xSize, 0, 0, xSize - 1, 0, COL8_C6C6C6);
+    box_fill8(buf, xSize, 1, 1, xSize - 2, 1, COL8_FFFFFF);
+    box_fill8(buf, xSize, 0, 0, 0, ySize - 1, COL8_C6C6C6);
+    box_fill8(buf, xSize, 1, 1, 1, ySize - 2, COL8_FFFFFF);
+    box_fill8(buf, xSize, xSize - 2, 1, xSize - 2, ySize - 2, COL8_848484);
+    box_fill8(buf, xSize, xSize - 1, 0, xSize - 1, ySize - 1, COL8_000000);
+    box_fill8(buf, xSize, 2, 2, xSize - 3, ySize - 3, COL8_C6C6C6);
+    box_fill8(buf, xSize, 3, 3, xSize - 4, 20, COL8_000084);
+    box_fill8(buf, xSize, 1, ySize - 2, xSize - 2, ySize - 2, COL8_848484);
+    box_fill8(buf, xSize, 0, ySize - 1, xSize - 1, ySize - 1, COL8_000000);
+    print_str(buf, xSize, 24, 4, title, COL8_FFFFFF);
+    print_str(buf, xSize, 24, 28, "Welcome to", COL8_FFFFFF);
+    print_str(buf, xSize, 24, 44, "  Haribote-OS!", COL8_FFFFFF);
+    for (y = 0; y < 14; y++) {
+        for (x = 0; x < 16; x++) {
+            c = closebtn[y][x];
+            if (c == '@') {
+                c = COL8_000000;
+            } else if (c == '$') {
+                c = COL8_848484;
+            } else if (c == 'Q') {
+                c = COL8_C6C6C6;
+            } else {
+                c = COL8_FFFFFF;
+            }
+            buf[(5 + y) * xSize + (xSize - 21 + x)] = c;
+        }
+    }
 }
