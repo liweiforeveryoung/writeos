@@ -5,17 +5,14 @@
 #include "sheet.h"
 #include "global.h"
 #include "memorymanager.h"
+#include "graphic.h"
 
-
-#define transparent -1  // 透明的
-
-
-int get_color_from_sheet(struct Sheet *sheet, short x, short y) {
+char get_color_from_sheet(struct Sheet *sheet, short x, short y) {
     if ((x >= sheet->x0) && (x < sheet->x0 + sheet->width) &&
         (y >= sheet->y0) && (y < sheet->y0 + sheet->height)) {
         return sheet->buffer[(y - sheet->y0) * sheet->width + x - sheet->x0];
     }
-    return transparent;
+    return COLOR_TRANSPARENT;
 }
 
 unsigned char *get_pix_addr(unsigned char *vRam, short screen_width, short x, short y) {
@@ -45,14 +42,14 @@ void sheet_control_draw(struct SheetControl *control) {
     int color;
     for (x = 0; x < control->screen_width; ++x) {
         for (y = 0; y < control->screen_height; ++y) {
-            color = transparent;
+            color = COLOR_TRANSPARENT;
             for (level = 0; level < control->topSheetIndex; level++) {
                 struct Sheet *sheet = control->sheets[level];
-                if (get_color_from_sheet(sheet, x, y) != transparent) {
+                if (get_color_from_sheet(sheet, x, y) != COLOR_TRANSPARENT) {
                     color = get_color_from_sheet(sheet, x, y);
                 }
             }
-            if (color != transparent) {
+            if (color != COLOR_TRANSPARENT) {
                 *get_pix_addr(control->vRam, control->screen_width, x, y) = color;
             }
         }
@@ -79,11 +76,11 @@ void init_sheet(struct Sheet *sheet, short x0, short y0, short width, short heig
     sheet->y0 = y0;
     sheet->width = width;
     sheet->height = height;
-    sheet->buffer = (unsigned char *) memory_alloc(global_memory_manager, width * height);
+    sheet->buffer = (char *) memory_alloc(global_memory_manager, width * height);
 }
 
 // 将 sheet 的每个像素都设置为相同的颜色
-void set_sheet_color(struct Sheet *sheet, unsigned char color) {
+void set_sheet_color(struct Sheet *sheet, char color) {
     short x, y;
     for (x = 0; x < sheet->width; x++) {
         for (y = 0; y < sheet->height; ++y) {

@@ -46,5 +46,6 @@ extern const char COL8_008484;            // 浅暗蓝
 extern const char COL8_848484;            // 暗灰
 extern const char COLOR_BLACK;
 extern const char COLOR_WHITE;
+extern const char COLOR_TRANSPARENT;    // 透明的
 
 #endif //WRITEOS_GRAPHIC_H
