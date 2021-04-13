@@ -53,13 +53,18 @@ void HariMain(void) {
 
     struct Sheet *window = create_sheet(sheet_control, 20, 20, 160, 68);
     set_sheet_color(window, COLOR_TRANSPARENT);
-    make_window8(window->buffer, 160, 68, "window");
+    make_window8(window->buffer, window->width, window->height, "window");
+    sheet_control_draw(sheet_control);
+
+    struct Sheet *counter_window = create_sheet(sheet_control, 30, 30, 160, 52);
+    set_sheet_color(counter_window, COLOR_TRANSPARENT);
+    make_window8(counter_window->buffer, counter_window->width, counter_window->height, "counter");
     sheet_control_draw(sheet_control);
 
     init_mouse_sheet(sheet_control);
     init_keyboard();
     enable_mouse();
-    run();
+    run(counter_window);
 }
 
 // 初始化鼠标图层
@@ -81,7 +86,7 @@ void init_manager() {
 }
 
 
-void run() {
+void run(struct Sheet *counter_window) {
     unsigned char input, type;
     bool mouse_is_ready;
     short mouse_x, mouse_y;
@@ -92,7 +97,14 @@ void run() {
     struct MouseDecoder mouse_decoder;
     enum Button button;
     init_mouse(&mouse_decoder);
+    int count = 0;
+    char countStr[20] = {0};
     while (1) {
+        ++count;
+        sprintf(countStr, "%010d", count);
+        box_fill8(counter_window->buffer, counter_window->width, 40, 28, 119, 40, COL8_C6C6C6);
+        print_str(counter_window->buffer, counter_window->width, 40, 28, countStr, COLOR_WHITE);
+        set_sheet_pos(counter_window, counter_window->x0, counter_window->y0);
         io_cli();       // 禁用中断
         exist = read_data_from_buffer(&Key_buffer, &input, &type);
         if (exist) {
@@ -229,8 +241,6 @@ void make_window8(char *buf, short xSize, short ySize, char *title) {
     box_fill8(buf, xSize, 1, ySize - 2, xSize - 2, ySize - 2, COL8_848484);
     box_fill8(buf, xSize, 0, ySize - 1, xSize - 1, ySize - 1, COL8_000000);
     print_str(buf, xSize, 24, 4, title, COL8_FFFFFF);
-    print_str(buf, xSize, 24, 28, "Welcome to", COL8_FFFFFF);
-    print_str(buf, xSize, 24, 44, "  Haribote-OS!", COL8_FFFFFF);
     for (y = 0; y < 14; y++) {
         for (x = 0; x < 16; x++) {
             c = closebtn[y][x];
