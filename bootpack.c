@@ -26,7 +26,7 @@ const short MouseHeight = 16;
 
 #define MEMORY_MANAGER_ADDR            0x003c0000
 
-void init_manager(struct MemoryManager *manager);
+void init_manager();
 
 struct Sheet *mouse_sheet;
 
@@ -37,7 +37,7 @@ void HariMain(void) {
     init_key_buffer(&Key_buffer);
     io_sti();       // todo 为什么把 sti 放在这里可以达到效果，明明 在 init_palette 里调用了 io_cli，按理按照 cli 之后就不该会鼠标有反应了
     init_palette();
-    init_manager(global_memory_manager);
+    init_manager();
     char s[40] = {};
     sprintf(s, "screenX = %d", Boot_Info_Ptr->screenX);
     struct SheetControl *sheet_control = new_sheet_control(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX,
@@ -53,9 +53,6 @@ void HariMain(void) {
     sheet_control_draw(sheet_control);
 
     init_mouse_sheet(sheet_control);
-    // print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 32, 32, MouseWidth, MouseHeight, mouse);
-    // sprintf(s, "memory %d mb,free: %dkb", total_memory / (1024 * 1024), memory_total(global_memory_manager) / 1024);
-    // print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 64, 64, s, COLOR_BLACK);
     init_keyboard();
     enable_mouse();
     run(sheet_control);
@@ -66,11 +63,11 @@ void init_mouse_sheet(struct SheetControl *sheet_control) {
     mouse_sheet = create_sheet(sheet_control);
     init_sheet(mouse_sheet, 0, 0, MouseWidth, MouseHeight);
     set_sheet_color(mouse_sheet, COLOR_BLACK);
-    init_mouse_cursor8(mouse_sheet->buffer, COLOR_WHITE);
+    init_mouse_cursor8(mouse_sheet->buffer, COLOR_TRANSPARENT);
 }
 
 
-void init_manager(struct MemoryManager *manager) {
+void init_manager() {
     manager_init(global_memory_manager);
     const unsigned int memory_begin_addr = 0x00400000;
     unsigned int total_memory = mem_test(memory_begin_addr, 0xbfffffff);

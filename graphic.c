@@ -23,6 +23,7 @@ const char COL8_008484 = 14;            // 浅暗蓝
 const char COL8_848484 = 15;            // 暗灰
 const char COLOR_BLACK = 0;
 const char COLOR_WHITE = 7;
+const char COLOR_TRANSPARENT = -1;
 
 unsigned char *const VRam_Addr_Begin = (unsigned char *const) 0xa0000;
 unsigned char *const VRam_Addr_End = (unsigned char *const) 0xaffff;
