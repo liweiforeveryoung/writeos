@@ -69,10 +69,11 @@ void sheet_control_draw_sub_window(struct SheetControl *control, short x0, short
     for (x = x0; x < x1; ++x) {
         for (y = y0; y < y1; ++y) {
             color = COLOR_TRANSPARENT;
-            for (level = 0; level < control->topSheetIndex; level++) {
+            for (level = control->topSheetIndex - 1; level >= 0; --level) {
                 struct Sheet *sheet = control->sheets[level];
                 if (get_color_from_sheet(sheet, x, y) != COLOR_TRANSPARENT) {
                     color = get_color_from_sheet(sheet, x, y);
+                    break;
                 }
             }
             if (color != COLOR_TRANSPARENT) {
