@@ -1,10 +1,8 @@
 //
 // Created by liwei1 on 2021/4/1.
 //
-#include "bootpack.h"
 #include "keybuffer.h"
 #include "naskfunc.h"
-#include "graphic.h"
 
 const int PIC0_ICW1 = 0x0020;
 const int PIC0_OCW2 = 0x0020;
@@ -35,7 +33,7 @@ void init_pic(void) {
     io_out8(PIC1_ICW3, 1 << 2);  // PIC1 由 IRQ2 连接
     io_out8(PIC1_ICW4, 0x01); // 无缓冲区模式 电气特性 照抄即可
 
-    io_out8(PIC0_IMR, 0xf9);    // oxf9  = 1111 1001 如果等于 1，代表屏蔽该中断 mask，处理 1号中断2号中断
+    io_out8(PIC0_IMR, 0xf8);    // oxf9  = 1111 1000 如果等于 1，代表屏蔽该中断 mask，处理 1号中断2号中断
     io_out8(PIC1_IMR, 0xef);    // oxef  = 1110 1111 处理 12(c) 号中断
 }
 
@@ -70,9 +68,13 @@ void int_handler27(int *esp) {
     io_out8(PIC0_OCW2, 0x67);
 }
 
+int timer_count = 0;
+
 // 来自定时器的中断
-void int_handler20() {
+void int_handler20(int *esp) {
     io_out8(PIC0_OCW2, 0x60);   // 通知主 pic 0 号受理完成
+    // write_data_into_buffer(&Key_buffer, 0, FromTimer);
+    timer_count++;
 }
 
 #define PIT_CTRL    0x0043

@@ -10,7 +10,7 @@
 #define KeyBufferLength 200
 
 enum DataType {
-    FromKeyBoard = 0, FromMouse
+    FromKeyBoard = 0, FromMouse, FromTimer
 };
 
 // 这是一个 buffer ring 的实现，只存 length - 1 个数据
