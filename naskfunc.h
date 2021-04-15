@@ -25,6 +25,10 @@ int io_load_eflags(void);
 
 void io_store_eflags(int eflags);
 
+
+// 定时器的中断处理函数
+void asm_int_handler20();
+
 // 键盘的中断处理函数
 void asm_int_handler21();
 

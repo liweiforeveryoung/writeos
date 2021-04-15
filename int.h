@@ -7,4 +7,7 @@
 
 void init_pic(void);
 
+// 初始化 pit，programmable interrupt timer
+void init_pit(void);
+
 #endif //WRITEOS_INT_H

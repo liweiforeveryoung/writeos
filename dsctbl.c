@@ -59,4 +59,5 @@ void init_idt() {
     set_interrupt_desc(idt + 0x21, (int) asm_int_handler21, 2 * 8, AR_INTGATE32);
     set_interrupt_desc(idt + 0x2c, (int) asm_int_handler2c, 2 * 8, AR_INTGATE32);
     set_interrupt_desc(idt + 0x27, (int) asm_int_handler27, 2 * 8, AR_INTGATE32);
+    set_interrupt_desc(idt + 0x20, (int) asm_int_handler20, 2 * 8, AR_INTGATE32);
 }
