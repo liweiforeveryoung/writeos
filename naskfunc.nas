@@ -13,9 +13,9 @@ GLOBAL _io_in8,_io_in16,_io_in32
 GLOBAL _io_out8,_io_out16,_io_out32
 GLOBAL _load_gdtr, _load_idtr
 GLOBAL _load_cr0,_store_cr0
-GLOBAL _asm_int_handler21,_asm_int_handler2c,_asm_int_handler27
+GLOBAL _asm_int_handler20,_asm_int_handler21,_asm_int_handler2c,_asm_int_handler27
 GLOBAL _asm_memory_is_valid
-EXTERN _int_handler21,_int_handler2c,_int_handler27
+EXTERN _int_handler20,_int_handler21,_int_handler2c,_int_handler27
 
 ; 以下是实际的函数
 [SECTION .text]         ; 目标文件中写了这些之后再写程序
@@ -96,6 +96,27 @@ _load_idtr: ; void load_idtr(int limit,int addr)    interrupt descriptor
     MOV		[ESP+6],AX      ;
     LIDT	[ESP+6]
     RET
+
+; 定时器相关
+_asm_int_handler20:
+    PUSH    ES
+    PUSH    DS
+    PUSHAD          ; 上面三个 push 会把寄存器的值都存起来，包括 EAX，ESP
+
+    MOV     EAX,ESP ;  这两句代码是用来干啥的，没看懂
+    PUSH    EAX     ;  这两句代码是用来干啥的，没看懂
+
+    MOV     AX,SS   ;   将 DS 和 ES 调整到与 SS 相等
+    MOV     DS,AX   ;   将 DS 和 ES 调整到与 SS 相等
+    MOV     ES,AX   ;   将 DS 和 ES 调整到与 SS 相等
+    CALL    _int_handler20
+
+    POP     EAX
+
+    POPAD           ; 下面三个 pop 会把寄存器的值都弹出去
+    POP     DS
+    POP     ES
+    IRETD
 
 ; 中断处理完成之后，不能执行“return;”（=RET指令），而是必须执行 IRETD 指令，因此必须用汇编来完成
 _asm_int_handler21:

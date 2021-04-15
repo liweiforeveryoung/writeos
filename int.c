@@ -69,3 +69,18 @@ void int_handler2c(int *esp) {
 void int_handler27(int *esp) {
     io_out8(PIC0_OCW2, 0x67);
 }
+
+// 来自定时器的中断
+void int_handler20() {
+    io_out8(PIC0_OCW2, 0x60);   // 通知主 pic 0 号受理完成
+}
+
+#define PIT_CTRL    0x0043
+#define PIT_CNT0    0x0040
+
+// 初始化 pit，programmable interrupt timer
+void init_pit(void) {
+    io_out8(PIT_CTRL, 0x34);
+    io_out8(PIT_CNT0, 0x9c);
+    io_out8(PIT_CNT0, 0x2e);
+}

@@ -36,6 +36,7 @@ void HariMain(void) {
     init_gdt();
     init_idt();
     init_pic();
+    init_pit();
     init_key_buffer(&Key_buffer);
     io_sti();       // todo 为什么把 sti 放在这里可以达到效果，明明 在 init_palette 里调用了 io_cli，按理按照 cli 之后就不该会鼠标有反应了
     init_palette();
