@@ -86,6 +86,7 @@ void init_manager() {
     memory_free(global_memory_manager, memory_begin_addr, total_memory - memory_begin_addr);
 }
 
+extern int timer_count;
 
 void run(struct Sheet *counter_window) {
     unsigned char input, type;
@@ -98,11 +99,9 @@ void run(struct Sheet *counter_window) {
     struct MouseDecoder mouse_decoder;
     enum Button button;
     init_mouse(&mouse_decoder);
-    int count = 0;
     char countStr[20] = {0};
     while (1) {
-        ++count;
-        sprintf(countStr, "%010d", count);
+        sprintf(countStr, "%010d", timer_count);
         box_fill8(counter_window->buffer, counter_window->width, 40, 28, 119, 40, COL8_C6C6C6);
         print_str(counter_window->buffer, counter_window->width, 40, 28, countStr, COLOR_WHITE);
         set_sheet_pos(counter_window, counter_window->x0, counter_window->y0);

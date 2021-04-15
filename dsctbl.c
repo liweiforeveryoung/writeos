@@ -56,8 +56,8 @@ void init_idt() {
     load_idtr(0x7ff, (int) idt);
     // 2 << 3 表示段号是 2，之所以要左移3是因为低三位有别的意思，这里的低三位必须为 0
     // 将该中断的属性，设定为0x008e。它表示这是用于中断处理的有效设定
+    set_interrupt_desc(idt + 0x20, (int) asm_int_handler20, 2 * 8, AR_INTGATE32);
     set_interrupt_desc(idt + 0x21, (int) asm_int_handler21, 2 * 8, AR_INTGATE32);
     set_interrupt_desc(idt + 0x2c, (int) asm_int_handler2c, 2 * 8, AR_INTGATE32);
     set_interrupt_desc(idt + 0x27, (int) asm_int_handler27, 2 * 8, AR_INTGATE32);
-    set_interrupt_desc(idt + 0x20, (int) asm_int_handler20, 2 * 8, AR_INTGATE32);
 }
