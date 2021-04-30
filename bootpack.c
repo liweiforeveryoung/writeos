@@ -86,9 +86,8 @@ void init_manager() {
     memory_free(global_memory_manager, memory_begin_addr, total_memory - memory_begin_addr);
 }
 
-extern int timer_count;
-
 void run(struct Sheet *counter_window) {
+    int timer_count = 0;
     unsigned char input, type;
     bool mouse_is_ready;
     short mouse_x, mouse_y;
@@ -137,6 +136,8 @@ void run(struct Sheet *counter_window) {
                     // box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 20, 20, 200, 200, COLOR_WHITE);
                     // print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 20, 20, str, COLOR_BLACK);
                     break;
+                case FromTimer:
+                    timer_count++;
                 default:
             }
         } else {

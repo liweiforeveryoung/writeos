@@ -68,13 +68,12 @@ void int_handler27(int *esp) {
     io_out8(PIC0_OCW2, 0x67);
 }
 
-int timer_count = 0;
 
 // 来自定时器的中断
 void int_handler20(int *esp) {
     io_out8(PIC0_OCW2, 0x60);   // 通知主 pic 0 号受理完成
     // write_data_into_buffer(&Signal_buffer, 0, FromTimer);
-    timer_count++;
+    write_data_into_buffer(&Signal_buffer, '\0', FromTimer);
 }
 
 #define PIT_CTRL    0x0043
