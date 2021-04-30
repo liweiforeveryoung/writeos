@@ -1,5 +1,5 @@
 #所涉及到的目标(obj)文件集合
-OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj graphic.obj dsctbl.obj int.obj keybuffer.obj kbc.obj mousedecoder.obj global.obj memorymanager.obj \
+OBJS_BOOTPACK = bootpack.obj naskfunc.obj hankaku.obj graphic.obj dsctbl.obj int.obj signalbuffer.obj kbc.obj mousedecoder.obj global.obj memorymanager.obj \
 				sheet.obj
 
 TOOLPATH	= ../z_tools/

@@ -3,7 +3,7 @@
 //
 #include <stdio.h>
 #include "bootpack.h"
-#include "keybuffer.h"
+#include "signalbuffer.h"
 #include "naskfunc.h"
 #include "graphic.h"
 #include "dsctbl.h"
@@ -21,7 +21,7 @@ void make_window8(char *buf, short xSize, short ySize, char *title);
 
 struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x00000ff0;
 
-struct KeyBuffer Key_buffer;
+struct SignalBuffer Signal_buffer;
 
 const short MouseWidth = 16;
 const short MouseHeight = 16;
@@ -37,7 +37,7 @@ void HariMain(void) {
     init_idt();
     init_pic();
     init_pit();
-    init_key_buffer(&Key_buffer);
+    init_signal_buffer(&Signal_buffer);
     io_sti();       // todo 为什么把 sti 放在这里可以达到效果，明明 在 init_palette 里调用了 io_cli，按理按照 cli 之后就不该会鼠标有反应了
     init_palette();
     init_manager();
@@ -106,7 +106,7 @@ void run(struct Sheet *counter_window) {
         print_str(counter_window->buffer, counter_window->width, 40, 28, countStr, COLOR_WHITE);
         set_sheet_pos(counter_window, counter_window->x0, counter_window->y0);
         io_cli();       // 禁用中断
-        exist = read_data_from_buffer(&Key_buffer, &input, &type);
+        exist = read_data_from_buffer(&Signal_buffer, &input, &type);
         if (exist) {
             io_sti();
             char str[10] = {0};
