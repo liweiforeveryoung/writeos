@@ -12,6 +12,7 @@
 #include "mousedecoder.h"
 #include "memorymanager.h"
 #include "sheet.h"
+#include "timercb.h"
 
 unsigned int mem_test(unsigned int start, unsigned int end);
 
@@ -86,8 +87,13 @@ void init_manager() {
     memory_free(global_memory_manager, memory_begin_addr, total_memory - memory_begin_addr);
 }
 
+int timer_count = 0;
+
+void incr_timer_count() {
+    ++timer_count;
+}
+
 void run(struct Sheet *counter_window) {
-    int timer_count = 0;
     unsigned char input, type;
     bool mouse_is_ready;
     short mouse_x, mouse_y;
@@ -99,6 +105,7 @@ void run(struct Sheet *counter_window) {
     enum Button button;
     init_mouse(&mouse_decoder);
     char countStr[20] = {0};
+    timer_ctl_add(&GlobalTimerCallbackCtl, 1, incr_timer_count);
     while (1) {
         sprintf(countStr, "%010d", timer_count);
         box_fill8(counter_window->buffer, counter_window->width, 40, 28, 119, 40, COL8_C6C6C6);
