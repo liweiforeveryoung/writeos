@@ -12,14 +12,15 @@ VMODE       EQU     0x0ff2      ; 关于颜色数目的信息，颜色的位数
 SCRNX       EQU     0x0ff4      ; 分辨率的 x (screen x)
 SCRNY       EQU     0x0ff6      ; 分辨率的 y (screen y)
 VRAM        EQU     0x0ff8      ; 图像缓冲区的开始地址
+; 设置画面
 ORG		0xc200      ; 起始地址
-MOV     AL,0x13     ; VGA 显卡，320 * 300 * 8 位彩色
-MOV     AH,0x00
+MOV     BX,0x4101   ; VBE的640x480x8bit彩色
+MOV     AX,0x4f02
 INT     0x10
 MOV     BYTE [VMODE],8  ; 记录画面模式
-MOV     WORD [SCRNX],320
-MOV     WORD [SCRNY],200
-MOV     DWORD [VRAM],0x000a0000 ; 在 VGA 模式下，VRAM是0xa0000～0xaffff的64KB
+MOV     WORD [SCRNX],640
+MOV     WORD [SCRNY],480
+MOV     DWORD [VRAM],0xe0000000 ; 在 VBE 模式下
 ; 用BIOS取得键盘上各种LED指示灯的状态
 MOV     AH,0x02
 INT     0x16
