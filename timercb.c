@@ -11,7 +11,7 @@ void timer_ctl_tick(struct TimerCallbackCtl *ctl) {
             ctl->cbs[i].cb();
             ctl->cbs[i].curCount = 0;
         }
-    };
+    }
 }
 
 void timer_ctl_add(struct TimerCallbackCtl *ctl, int dstCount, void (*cb)(void)) {
