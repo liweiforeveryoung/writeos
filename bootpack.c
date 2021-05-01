@@ -33,6 +33,15 @@ void init_manager();
 
 struct Sheet *mouse_sheet;
 
+static char KeyTable[0x54] = {
+        0, 0, '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '^', 0, 0,
+        'Q', 'W', 'E', 'R', 'T', 'Y', 'U', 'I', 'O', 'P', '@', '[', 0, 0,
+        'A', 'S', 'D', 'F', 'G', 'H', 'J', 'K', 'L', ';', ':', 0, 0, ']',
+        'Z', 'X', 'C', 'V', 'B', 'N', 'M', ',', '.', '/', 0, '*', 0, ' ', 0, 0, 0, 0, 0, 0,
+        0, 0, 0, 0, 0, 0, 0, '7', '8', '9', '-', '4', '5', '6', '+', '1',
+        '2', '3', '0', '.'
+};
+
 void HariMain(void) {
     init_gdt();
     init_idt();
@@ -58,15 +67,15 @@ void HariMain(void) {
     make_window8(window->buffer, window->width, window->height, "window");
     sheet_control_draw(sheet_control);
 
-    struct Sheet *counter_window = create_sheet(sheet_control, 30, 30, 160, 52);
-    set_sheet_color(counter_window, COLOR_TRANSPARENT);
-    make_window8(counter_window->buffer, counter_window->width, counter_window->height, "counter");
+    struct Sheet *char_window = create_sheet(sheet_control, 30, 30, 160, 52);
+    set_sheet_color(char_window, COLOR_TRANSPARENT);
+    make_window8(char_window->buffer, char_window->width, char_window->height, "window");
     sheet_control_draw(sheet_control);
 
     init_mouse_sheet(sheet_control);
     init_keyboard();
     enable_mouse();
-    run(counter_window);
+    run(char_window);
 }
 
 // 初始化鼠标图层
@@ -87,13 +96,7 @@ void init_manager() {
     memory_free(global_memory_manager, memory_begin_addr, total_memory - memory_begin_addr);
 }
 
-int timer_count = 0;
-
-void incr_timer_count() {
-    ++timer_count;
-}
-
-void run(struct Sheet *counter_window) {
+void run(struct Sheet *window) {
     unsigned char input, type;
     bool mouse_is_ready;
     short mouse_x, mouse_y;
@@ -104,13 +107,8 @@ void run(struct Sheet *counter_window) {
     struct MouseDecoder mouse_decoder;
     enum Button button;
     init_mouse(&mouse_decoder);
-    char countStr[20] = {0};
-    timer_ctl_add(&GlobalTimerCallbackCtl, 1, incr_timer_count);
+    char buf[20] = {0};
     while (1) {
-        sprintf(countStr, "%010d", timer_count);
-        box_fill8(counter_window->buffer, counter_window->width, 40, 28, 119, 40, COL8_C6C6C6);
-        print_str(counter_window->buffer, counter_window->width, 40, 28, countStr, COLOR_WHITE);
-        set_sheet_pos(counter_window, counter_window->x0, counter_window->y0);
         io_cli();       // 禁用中断
         exist = read_data_from_buffer(&Signal_buffer, &input, &type);
         if (exist) {
@@ -133,18 +131,20 @@ void run(struct Sheet *counter_window) {
 
                         button = get_button(&mouse_decoder);
                         set_sheet_pos(mouse_sheet, x, y);
-                        // print_mouse(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, x, y, MouseWidth,
-                        //             MouseHeight, mouse);
                     }
 
                     break;
                 case FromKeyBoard:
-                    // sprintf(str, "k %x", input);
-                    // box_fill8(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 20, 20, 200, 200, COLOR_WHITE);
-                    // print_str(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX, 20, 20, str, COLOR_BLACK);
+                    // input < 0x54 是为了只接收按下的字符，不接受松开的字符
+                    if ((input < 0x54) && (KeyTable[input] != 0)) {
+                        buf[0] = KeyTable[input];
+                        buf[1] = '\0';
+                        box_fill8(window->buffer, window->width, 40, 28, 119, 28 + 16, COL8_C6C6C6);
+                        print_str(window->buffer, window->width, 40, 28, buf, COLOR_WHITE);
+                        set_sheet_pos(window, window->x0, window->y0);
+                    }
                     break;
                 case FromTimer:
-                    timer_count++;
                 default:
             }
         } else {
