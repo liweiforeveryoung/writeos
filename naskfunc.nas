@@ -15,6 +15,7 @@ GLOBAL _load_gdtr, _load_idtr
 GLOBAL _load_cr0,_store_cr0
 GLOBAL _asm_int_handler20,_asm_int_handler21,_asm_int_handler2c,_asm_int_handler27
 GLOBAL _asm_memory_is_valid
+GLOBAL _load_tr,_taskswitch4
 EXTERN _int_handler20,_int_handler21,_int_handler2c,_int_handler27
 
 ; 以下是实际的函数
@@ -186,6 +187,14 @@ _load_cr0:		; int load_cr0(void);
 _store_cr0:		; void store_cr0(int cr0);
 		MOV		EAX,[ESP+4]
 		MOV		CR0,EAX
+		RET
+
+_load_tr:       ; void load_tr(int tr)
+        LTR [ESP+4]
+        RET
+
+_taskswitch4:	; void taskswitch4(void);
+		JMP		4*8:0
 		RET
 
 _asm_memory_is_valid:   ; bool asm_memory_is_valid(unsigned int *pMemory)
