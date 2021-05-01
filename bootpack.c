@@ -77,7 +77,8 @@ void HariMain(void) {
     init_keyboard();
     enable_mouse();
 
-    taskswitch4();
+    // 五秒时候切换任务
+    timer_ctl_add(&GlobalTimerCallbackCtl, 500, taskswitch4, false);
 
     run(char_window);
 }
@@ -170,6 +171,7 @@ void run(struct Sheet *window) {
                     }
                     break;
                 case FromTimer:
+                    timer_ctl_tick(&GlobalTimerCallbackCtl);
                 default:
             }
         } else {
