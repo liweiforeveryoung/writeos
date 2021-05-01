@@ -132,6 +132,11 @@ void run(struct Sheet *window) {
 
                         button = get_button(&mouse_decoder);
                         set_sheet_pos(mouse_sheet, x, y);
+
+                        // 前行拽着窗口移动
+                        if (button == Left) {
+                            set_sheet_pos(window, x - 80, y - 8);
+                        }
                     }
 
                     break;
