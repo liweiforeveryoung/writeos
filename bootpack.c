@@ -108,6 +108,7 @@ void run(struct Sheet *window) {
     enum Button button;
     init_mouse(&mouse_decoder);
     char buf[20] = {0};
+    int key_cursor_x = 0;   // 当前键盘光标位置
     while (1) {
         io_cli();       // 禁用中断
         exist = read_data_from_buffer(&Signal_buffer, &input, &type);
@@ -135,11 +136,26 @@ void run(struct Sheet *window) {
 
                     break;
                 case FromKeyBoard:
-                    // input < 0x54 是为了只接收按下的字符，不接受松开的字符
-                    if ((input < 0x54) && (KeyTable[input] != 0)) {
-                        buf[0] = KeyTable[input];
-                        buf[1] = '\0';
-                        box_fill8(window->buffer, window->width, 40, 28, 119, 28 + 16, COL8_C6C6C6);
+                    if (input < 0x54 || input == 0x0e) {
+                        // input < 0x54 是为了只接收按下的字符，不接受松开的字符
+                        if ((input < 0x54) && (KeyTable[input] != 0)) {
+                            buf[key_cursor_x] = KeyTable[input];
+                            ++key_cursor_x;
+                            // 最多打印十个字符
+                            if (key_cursor_x > 10) {
+                                key_cursor_x = 10;
+                            }
+                        } else if (input == 0x0e) {
+                            // 退格键
+                            --key_cursor_x;
+                            if (key_cursor_x < 0) {
+                                key_cursor_x = 0;
+                            }
+                        }
+                        buf[key_cursor_x] = '\0';
+                        box_fill8(window->buffer, window->width, 40, 28, window->width, 28 + 16, COL8_C6C6C6);
+                        box_fill8(window->buffer, window->width, 40 + key_cursor_x * 8, 28, 40 + (key_cursor_x + 1) * 8,
+                                  28 + 16, COLOR_WHITE);
                         print_str(window->buffer, window->width, 40, 28, buf, COLOR_WHITE);
                         set_sheet_pos(window, window->x0, window->y0);
                     }
