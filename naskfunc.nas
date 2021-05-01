@@ -15,7 +15,8 @@ GLOBAL _load_gdtr, _load_idtr
 GLOBAL _load_cr0,_store_cr0
 GLOBAL _asm_int_handler20,_asm_int_handler21,_asm_int_handler2c,_asm_int_handler27
 GLOBAL _asm_memory_is_valid
-GLOBAL _load_tr,_taskswitch4
+GLOBAL _load_tr
+GLOBAL _taskswitch3,_taskswitch4,_switch_task_n
 EXTERN _int_handler20,_int_handler21,_int_handler2c,_int_handler27
 
 ; 以下是实际的函数
@@ -193,9 +194,18 @@ _load_tr:       ; void load_tr(int tr)
         LTR [ESP+4]
         RET
 
+_taskswitch3:	; void taskswitch3(void);
+        JMP		3*8:0
+        RET
+
 _taskswitch4:	; void taskswitch4(void);
 		JMP		4*8:0
 		RET
+
+;_switch_task_n: ; void switch_task_n(int n);
+;        MOV     EAX,[ESP+4] * 8
+;        JMP     WORD PTR EAX:0
+;        RET
 
 _asm_memory_is_valid:   ; bool asm_memory_is_valid(unsigned int *pMemory)
         PUSH	EBP
