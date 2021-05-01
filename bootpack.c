@@ -61,6 +61,15 @@ void task_b_main(void) {
     }
 }
 
+// 切换到三号任务
+void taskswitch3(void) {
+    jmp_far(0, 3 * 8);
+}
+
+// 切换到四号任务
+void taskswitch4(void) {
+    jmp_far(0, 4 * 8);
+}
 
 void HariMain(void) {
     init_gdt();
