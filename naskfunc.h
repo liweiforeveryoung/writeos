@@ -50,4 +50,9 @@ void store_cr0(int cr0);
 
 bool asm_memory_is_valid(unsigned int *pMemory);
 
+void load_tr(int tr);
+
+// 切换到四号任务
+void taskswitch4(void);
+
 #endif //WRITEOS_NASKFUNC_H

@@ -1,5 +1,6 @@
 #include "naskfunc.h"
 #include "dsctbl.h"
+#include "memorymanager.h"
 
 void set_segment_desc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar) {
     if (limit > 0xfffff) {
@@ -20,6 +21,45 @@ const int LIMIT_BOTPAK = 0x0007ffff;
 const int ADR_BOTPAK = 0x00280000;
 const int LIMIT_GDT = 0x0000ffff;
 const int ADR_GDT = 0x00270000;
+const int AR_TSS32 = 0x0089;
+
+struct TSS32 {
+    int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
+    int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
+    int es, cs, ss, ds, fs, gs;
+    int ldtr, iomap;
+};
+
+void task_b_main(void) {
+    for (;;) { io_hlt(); }
+}
+
+struct TSS32 tss_a, tss_b;
+
+void init_tss() {
+    tss_a.ldtr = 0;
+    tss_a.iomap = 0x40000000;
+    load_tr(3 * 8);     // 当前执行的是第三号任务
+    tss_b.ldtr = 0;
+    tss_b.iomap = 0x40000000;
+    tss_b.eip = (int) &task_b_main;
+    tss_b.eflags = 0x00000202; /* IF = 1; */
+    tss_b.eax = 0;
+    tss_b.ecx = 0;
+    tss_b.edx = 0;
+    tss_b.ebx = 0;
+    tss_b.esp = memory_alloc(global_memory_manager, 64 * 1024) + 64 * 1024; // 给任务 b 准备 64kb 的栈空间
+    tss_b.ebp = 0;
+    tss_b.esi = 0;
+    tss_b.edi = 0;
+    tss_b.es = 1 * 8;
+    tss_b.cs = 2 * 8;   // GDT 的二号
+    tss_b.ss = 1 * 8;   // GDT 的一号
+    tss_b.ds = 1 * 8;   // GDT 的一号
+    tss_b.fs = 1 * 8;   // GDT 的一号
+    tss_b.gs = 1 * 8;   // GDT 的一号
+}
+
 
 // 初始化 global descriptor table（段表）
 void init_gdt() {
@@ -32,6 +72,8 @@ void init_gdt() {
     }
     set_segment_desc(gdt + 1, 0xffffffff, 0x00000000, AR_DATA32_RW);
     set_segment_desc(gdt + 2, LIMIT_BOTPAK, ADR_BOTPAK, AR_CODE32_ER);
+    set_segment_desc(gdt + 3, 103, (int) &tss_a, AR_TSS32);
+    set_segment_desc(gdt + 4, 103, (int) &tss_b, AR_TSS32);
     load_gdtr(LIMIT_GDT, (int) gdt);
 }
 

@@ -108,7 +108,7 @@ pipelineflush:
 skip:
 		MOV		ESP,[EBX+12]	; 栈初始值
 		JMP		DWORD 2*8:0x0000001b ; 这里的0x1b号地址是指第2个段的0x1b号地址。第2个段的基地址是0x280000，所以实际上是从0x28001b开始执行的。这也就是 bootpack.hrb的0x1b号地址。这样就开始执行bootpack.hrb了。■■■■■下面要讲的内容可能有点偏离主题，但笔者还是想介绍一下“纸娃娃系统”的内存分布图。0x00000000  -  0x000fffff  : 虽然在启动中会多次使用，但之后就变空。（1MB）0x00100000 - 0x00267fff : 用于保存软盘的内容。（1440KB）0x00268000 - 0x0026f7ff : 空（30KB）0x0026f800 - 0x0026ffff : IDT（2KB）0x00270000 - 0x0027ffff : GDT（64KB）
-
+        ; 这里是一个 far jmp
 
 waitkbdout:
 		IN		 AL,0x64
