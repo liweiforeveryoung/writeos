@@ -42,6 +42,26 @@ static char KeyTable[0x54] = {
         '2', '3', '0', '.'
 };
 
+
+void task_b_main(void) {
+    unsigned char input, type;
+    bool exist;
+    while (1) {
+        io_cli();       // 禁用中断
+        exist = read_data_from_buffer(&Signal_buffer, &input, &type);
+        if (exist) {
+            io_sti();
+            if (type == FromTimer) {
+                timer_ctl_tick(&GlobalTimerCallbackCtl);
+            }
+        } else {
+            // 如果 buffer 内没有数据 就继续睡觉
+            io_stihlt();    // 原因见 readme
+        }
+    }
+}
+
+
 void HariMain(void) {
     init_gdt();
     init_idt();
@@ -51,7 +71,7 @@ void HariMain(void) {
     io_sti();       // todo 为什么把 sti 放在这里可以达到效果，明明 在 init_palette 里调用了 io_cli，按理按照 cli 之后就不该会鼠标有反应了
     init_palette();
     init_manager();
-    init_tss();
+    init_tss(task_b_main);
     char s[40] = {};
     sprintf(s, "screenX = %d", Boot_Info_Ptr->screenX);
     struct SheetControl *sheet_control = new_sheet_control(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX,
@@ -79,6 +99,7 @@ void HariMain(void) {
 
     // 五秒时候切换任务
     timer_ctl_add(&GlobalTimerCallbackCtl, 500, taskswitch4, false);
+    timer_ctl_add(&GlobalTimerCallbackCtl, 1000, taskswitch3, false);
 
     run(char_window);
 }

@@ -52,6 +52,9 @@ bool asm_memory_is_valid(unsigned int *pMemory);
 
 void load_tr(int tr);
 
+// 切换到三号任务
+void taskswitch3(void);
+
 // 切换到四号任务
 void taskswitch4(void);
 
