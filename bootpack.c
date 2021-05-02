@@ -76,6 +76,18 @@ void taskswitch4(void) {
 void init_sheet_control() {
     global_sheet_control = new_sheet_control(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX,
                                              Boot_Info_Ptr->screenY);
+    // 背景图层
+    struct Sheet *background_sheet = create_sheet(global_sheet_control, 0, 0, Boot_Info_Ptr->screenX,
+                                                  Boot_Info_Ptr->screenY);
+    set_sheet_color(background_sheet, COLOR_WHITE);
+}
+
+struct Sheet *create_window(short x0, short y0, short width, short height, char *title) {
+    struct Sheet *window = create_sheet(global_sheet_control, x0, y0, width, height);
+    set_sheet_color(window, COLOR_TRANSPARENT);
+    make_window8(window->buffer, window->width, window->height, title);
+    sheet_control_draw(global_sheet_control);
+    return window;
 }
 
 void HariMain(void) {
@@ -91,21 +103,9 @@ void HariMain(void) {
     char s[40] = {};
     sprintf(s, "screenX = %d", Boot_Info_Ptr->screenX);
     init_sheet_control();
-    struct Sheet *root_sheet = create_sheet(global_sheet_control, 0, 0, Boot_Info_Ptr->screenX, Boot_Info_Ptr->screenY);
-    set_sheet_color(root_sheet, COLOR_WHITE);
 
     struct Sheet *red_sheet = create_sheet(global_sheet_control, 20, 20, 100, 100);
     set_sheet_color(red_sheet, COL8_FF0000);
-
-    struct Sheet *window = create_sheet(global_sheet_control, 20, 20, 160, 68);
-    set_sheet_color(window, COLOR_TRANSPARENT);
-    make_window8(window->buffer, window->width, window->height, "window");
-    sheet_control_draw(global_sheet_control);
-
-    struct Sheet *char_window = create_sheet(global_sheet_control, 30, 30, 160, 52);
-    set_sheet_color(char_window, COLOR_TRANSPARENT);
-    make_window8(char_window->buffer, char_window->width, char_window->height, "window");
-    sheet_control_draw(global_sheet_control);
 
     init_mouse_sheet(global_sheet_control);
     init_keyboard();
@@ -115,7 +115,7 @@ void HariMain(void) {
     timer_ctl_add(&GlobalTimerCallbackCtl, 500, taskswitch4, false);
     timer_ctl_add(&GlobalTimerCallbackCtl, 1000, taskswitch3, false);
 
-    run(char_window);
+    run();
 }
 
 // 初始化鼠标图层
@@ -136,7 +136,8 @@ void init_manager() {
     memory_free(global_memory_manager, memory_begin_addr, total_memory - memory_begin_addr);
 }
 
-void run(struct Sheet *window) {
+void run() {
+    struct Sheet *window = create_window(30, 30, 160, 52, "main window");
     unsigned char input, type;
     bool mouse_is_ready;
     short mouse_x, mouse_y;
@@ -282,7 +283,8 @@ bool memory_is_valid(unsigned int *pMemory) {
 
 // 制作窗口
 void make_window8(char *buf, short xSize, short ySize, char *title) {
-    static char closebtn[14][16] = {
+    // 表面上 "OOOOOOOOOOOOOOO@" 中只有 16 个 char，但是后面有一个 \0 。
+    static char closebtn[14][17] = {
             "OOOOOOOOOOOOOOO@",
             "OQQQQQQQQQQQQQ$@",
             "OQQQQQQQQQQQQQ$@",
