@@ -24,6 +24,8 @@ struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x00000ff0;
 
 struct SignalBuffer Signal_buffer;
 
+struct SheetControl *global_sheet_control;
+
 const short MouseWidth = 16;
 const short MouseHeight = 16;
 
@@ -71,6 +73,11 @@ void taskswitch4(void) {
     jmp_far(0, 4 * 8);
 }
 
+void init_sheet_control() {
+    global_sheet_control = new_sheet_control(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX,
+                                             Boot_Info_Ptr->screenY);
+}
+
 void HariMain(void) {
     init_gdt();
     init_idt();
@@ -83,26 +90,24 @@ void HariMain(void) {
     init_tss(task_b_main);
     char s[40] = {};
     sprintf(s, "screenX = %d", Boot_Info_Ptr->screenX);
-    struct SheetControl *sheet_control = new_sheet_control(Boot_Info_Ptr->vRamAddr, Boot_Info_Ptr->screenX,
-                                                           Boot_Info_Ptr->screenY);
-
-    struct Sheet *root_sheet = create_sheet(sheet_control, 0, 0, Boot_Info_Ptr->screenX, Boot_Info_Ptr->screenY);
+    init_sheet_control();
+    struct Sheet *root_sheet = create_sheet(global_sheet_control, 0, 0, Boot_Info_Ptr->screenX, Boot_Info_Ptr->screenY);
     set_sheet_color(root_sheet, COLOR_WHITE);
 
-    struct Sheet *red_sheet = create_sheet(sheet_control, 20, 20, 100, 100);
+    struct Sheet *red_sheet = create_sheet(global_sheet_control, 20, 20, 100, 100);
     set_sheet_color(red_sheet, COL8_FF0000);
 
-    struct Sheet *window = create_sheet(sheet_control, 20, 20, 160, 68);
+    struct Sheet *window = create_sheet(global_sheet_control, 20, 20, 160, 68);
     set_sheet_color(window, COLOR_TRANSPARENT);
     make_window8(window->buffer, window->width, window->height, "window");
-    sheet_control_draw(sheet_control);
+    sheet_control_draw(global_sheet_control);
 
-    struct Sheet *char_window = create_sheet(sheet_control, 30, 30, 160, 52);
+    struct Sheet *char_window = create_sheet(global_sheet_control, 30, 30, 160, 52);
     set_sheet_color(char_window, COLOR_TRANSPARENT);
     make_window8(char_window->buffer, char_window->width, char_window->height, "window");
-    sheet_control_draw(sheet_control);
+    sheet_control_draw(global_sheet_control);
 
-    init_mouse_sheet(sheet_control);
+    init_mouse_sheet(global_sheet_control);
     init_keyboard();
     enable_mouse();
 
