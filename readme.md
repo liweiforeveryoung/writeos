@@ -1097,3 +1097,20 @@ _farjmp:		; void farjmp(int eip, int cs);
 ```
 
 “JMP FAR”指令的功能是执行far跳转。在JMP FAR指令中，可以指定一个内存地址，CPU会从指定的内存地址中读取4个字节的数据，并将其存入EIP寄存器，再继续读取2个字节的数据，并将其存入CS寄存器<u>**(注意是先IP后CS)**</u>。当我们调用这个函数，比如farjmp(eip,cs);，在[ESP+4]这个位置就存放了eip的值，而[ESP+8]则存放了cs的值。
+
+###### 往 esp 中写入参数来达到向函数传递参数的目的
+
+```c
+tss_b.eip = task_b_main_addr;
+tss_b.esp = memory_alloc(global_memory_manager, 64 * 1024) + 64 * 1024 - 8; // 给任务 b 准备 64kb 的栈空间
+*((int *) (tss_b.esp + 4)) = 1234;
+```
+
+```c
+void task_b_main(int arg) {
+    char buffer[20] = {0};
+    sprintf(buffer, "%d hello", arg);
+}
+```
+
+![image-20210502165425140](readme.assets/image-20210502165425140.png)
