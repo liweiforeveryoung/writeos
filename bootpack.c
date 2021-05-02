@@ -20,6 +20,8 @@ void init_mouse_sheet(struct SheetControl *sheet_control);
 
 void make_window8(char *buf, short xSize, short ySize, char *title);
 
+struct Sheet *create_window(short x0, short y0, short width, short height, char *title);
+
 struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x00000ff0;
 
 struct SignalBuffer Signal_buffer;
@@ -99,7 +101,7 @@ void HariMain(void) {
     io_sti();       // todo 为什么把 sti 放在这里可以达到效果，明明 在 init_palette 里调用了 io_cli，按理按照 cli 之后就不该会鼠标有反应了
     init_palette();
     init_manager();
-    init_tss(task_b_main);
+    init_tss((int) task_b_main);
     char s[40] = {};
     sprintf(s, "screenX = %d", Boot_Info_Ptr->screenX);
     init_sheet_control();

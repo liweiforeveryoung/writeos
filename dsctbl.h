@@ -31,6 +31,6 @@ void init_gdt();
 // 初始化中断向量表  interrupt descriptor table
 void init_idt();
 
-void init_tss(void(*task_b_main)(void));
+void init_tss(int task_b_main_addr);
 
 #endif //WRITEOS_DSCTBL_H
