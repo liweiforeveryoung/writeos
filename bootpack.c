@@ -47,7 +47,12 @@ static char KeyTable[0x54] = {
 };
 
 
-void task_b_main(void) {
+void task_b_main(int arg) {
+    struct Sheet *task_b_window = create_window(100, 100, 200, 100, "task b");
+    char buffer[20] = {0};
+    sprintf(buffer, "%d hello", arg);
+    print_str(task_b_window->buffer, task_b_window->width, 28, 40, buffer, COLOR_WHITE);
+    set_sheet_pos(task_b_window, task_b_window->x0, task_b_window->y0);
     unsigned char input, type;
     bool exist;
     while (1) {
