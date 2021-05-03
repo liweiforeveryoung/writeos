@@ -44,8 +44,7 @@ void init_tss(int task_b_main_addr) {
     tss_b.ecx = 0;
     tss_b.edx = 0;
     tss_b.ebx = 0;
-    tss_b.esp = memory_alloc(global_memory_manager, 64 * 1024) + 64 * 1024 - 8; // 给任务 b 准备 64kb 的栈空间
-    *((int *) (tss_b.esp + 4)) = 1234;
+    tss_b.esp = memory_alloc(global_memory_manager, 64 * 1024) + 64 * 1024; // 给任务 b 准备 64kb 的栈空间
     tss_b.ebp = 0;
     tss_b.esi = 0;
     tss_b.edi = 0;
