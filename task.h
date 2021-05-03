@@ -15,6 +15,7 @@ struct Tss32 {
 struct Task {
     int sel; // sel用来存放GDT的编号
     int priority;   // 优先级，值为 1 到 10，分别代表运行 0.01 秒 或者运行 0.1 秒
+    int timeHasRun; // 已近运行的时间
     struct Tss32 tss;
 };
 

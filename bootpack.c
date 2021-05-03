@@ -112,7 +112,7 @@ void HariMain(void) {
     init_manager();
     InitGlobalTaskController();
     AddTask((int) task_b_main, 2);
-    AddTask((int) task_c_main, 2);
+    AddTask((int) task_c_main, 4);
     char s[40] = {};
     sprintf(s, "screenX = %d", Boot_Info_Ptr->screenX);
     init_sheet_control();
