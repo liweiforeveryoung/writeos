@@ -7,15 +7,14 @@
 #include "memorymanager.h"
 #include "dsctbl.h"
 
-bool switch_task_task4 = false;
-
 void switch_task() {
-    switch_task_task4 = !switch_task_task4;
-    if (switch_task_task4) {
-        jmp_far(0, 4 * 8);
-    } else {
-        jmp_far(0, 3 * 8);
+    if (GlobalTaskController->runningTasksCount < 2) {
+        return;
     }
+    int next = (GlobalTaskController->currentTaskIndex + 1) % GlobalTaskController->runningTasksCount;
+    int nextSel = GlobalTaskController->tasks[next].sel;
+    GlobalTaskController->currentTaskIndex = next;
+    jmp_far(0, nextSel);
 }
 
 struct TaskController *GlobalTaskController;
@@ -25,7 +24,8 @@ void InitGlobalTaskController() {
     GlobalTaskController->tasks[0].tss.ldtr = 0;
     GlobalTaskController->tasks[0].tss.iomap = 0x40000000;
     GlobalTaskController->tasks[0].sel = 3 * 8;     // 起步為 3
-    GlobalTaskController->running = 1;
+    GlobalTaskController->runningTasksCount = 1;
+    GlobalTaskController->currentTaskIndex = 0;
     int i = 0;
     for (; i < 100; i++) {
         set_tss_desc(3 + i, (int) &(GlobalTaskController->tasks[i].tss));
@@ -37,7 +37,7 @@ struct TaskController *GlobalTaskController;
 
 
 void AddTask(int taskAddr) {
-    struct Task *task = GlobalTaskController->tasks + GlobalTaskController->running;
+    struct Task *task = GlobalTaskController->tasks + GlobalTaskController->runningTasksCount;
     task->tss.ldtr = 0;
     task->tss.iomap = 0x40000000;
     task->tss.eip = taskAddr;
@@ -56,6 +56,6 @@ void AddTask(int taskAddr) {
     task->tss.ds = 1 * 8;   // GDT 的一号
     task->tss.fs = 1 * 8;   // GDT 的一号
     task->tss.gs = 1 * 8;   // GDT 的一号
-    task->sel = (3 + GlobalTaskController->running) * 8;
-    GlobalTaskController->running++;
+    task->sel = (3 + GlobalTaskController->runningTasksCount) * 8;
+    GlobalTaskController->runningTasksCount++;
 }
