@@ -47,15 +47,18 @@ static char KeyTable[0x54] = {
 };
 
 
-void task_b_main(int arg) {
+void task_b_main() {
     struct Sheet *task_b_window = create_window(100, 100, 200, 100, "task b");
     char buffer[20] = {0};
-    sprintf(buffer, "%d hello", arg);
-    print_str(task_b_window->buffer, task_b_window->width, 28, 40, buffer, COLOR_WHITE);
-    set_sheet_pos(task_b_window, task_b_window->x0, task_b_window->y0);
+    int count = 0;
     unsigned char input, type;
     bool exist;
     while (1) {
+        count++;
+        sprintf(buffer, "%d hello", count);
+        box_fill8(task_b_window->buffer,task_b_window->width,28,40,task_b_window->width,40 + 16,COL8_C6C6C6);
+        print_str(task_b_window->buffer, task_b_window->width, 28, 40, buffer, COLOR_WHITE);
+        set_sheet_pos(task_b_window, task_b_window->x0, task_b_window->y0);
         io_cli();       // 禁用中断
         exist = read_data_from_buffer(&Signal_buffer, &input, &type);
         if (exist) {
@@ -78,6 +81,16 @@ void taskswitch3(void) {
 // 切换到四号任务
 void taskswitch4(void) {
     jmp_far(0, 4 * 8);
+}
+
+void switch_task() {
+    static bool switch4 = false;
+    switch4 = !switch4; // 这句代码一定要在 switch 之前执行，要不然它就会永远没机会执行
+    if (switch4) {
+        taskswitch4();
+    } else {
+        taskswitch3();
+    }
 }
 
 void init_sheet_control() {
@@ -119,8 +132,7 @@ void HariMain(void) {
     enable_mouse();
 
     // 五秒时候切换任务
-    timer_ctl_add(&GlobalTimerCallbackCtl, 500, taskswitch4, false);
-    timer_ctl_add(&GlobalTimerCallbackCtl, 1000, taskswitch3, false);
+    timer_ctl_add(&GlobalTimerCallbackCtl, 1, switch_task, true);
 
     run();
 }
