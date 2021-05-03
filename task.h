@@ -19,8 +19,8 @@ struct Task {
 };
 
 struct TaskController {
-    int running; // 正在运行的任务数
-    // int now; // 当前正在运行的是哪个任务
+    int runningTasksCount; // 正在运行的任务数
+    int currentTaskIndex; // 当前正在运行的是哪个任务
     struct Task tasks[100];
 };
 
