@@ -11,6 +11,12 @@ void switch_task() {
     if (GlobalTaskController->runningTasksCount < 2) {
         return;
     }
+    struct Task *currentTask = GlobalTaskController->tasks + GlobalTaskController->currentTaskIndex;
+    if (currentTask->timeHasRun < currentTask->priority) {
+        currentTask->timeHasRun++;
+        return;
+    }
+    currentTask->timeHasRun = 0;
     int next = (GlobalTaskController->currentTaskIndex + 1) % GlobalTaskController->runningTasksCount;
     int nextSel = GlobalTaskController->tasks[next].sel;
     GlobalTaskController->currentTaskIndex = next;
@@ -25,6 +31,7 @@ void InitGlobalTaskController() {
     GlobalTaskController->tasks[0].tss.iomap = 0x40000000;
     GlobalTaskController->tasks[0].sel = 3 * 8;     // 起步為 3
     GlobalTaskController->tasks[0].priority = 2;    // 运行 0.2 秒
+    GlobalTaskController->tasks[0].timeHasRun = 0;
     GlobalTaskController->runningTasksCount = 1;
     GlobalTaskController->currentTaskIndex = 0;
     int i = 0;
@@ -59,5 +66,6 @@ void AddTask(int taskAddr, int priority) {
     task->tss.gs = 1 * 8;   // GDT 的一号
     task->sel = (3 + GlobalTaskController->runningTasksCount) * 8;
     task->priority = priority;
+    task->timeHasRun = 0;
     GlobalTaskController->runningTasksCount++;
 }
