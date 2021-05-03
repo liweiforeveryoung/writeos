@@ -61,6 +61,19 @@ void task_b_main() {
     }
 }
 
+void task_c_main() {
+    struct Sheet *task_b_window = create_window(100, 200, 200, 100, "task c");
+    char buffer[20] = {0};
+    int count = 0;
+    while (1) {
+        count++;
+        sprintf(buffer, "%d hello", count);
+        box_fill8(task_b_window->buffer, task_b_window->width, 28, 40, task_b_window->width, 40 + 16, COL8_C6C6C6);
+        print_str(task_b_window->buffer, task_b_window->width, 28, 40, buffer, COLOR_WHITE);
+        set_sheet_pos(task_b_window, task_b_window->x0, task_b_window->y0);
+    }
+}
+
 // 切换到三号任务
 void taskswitch3(void) {
     jmp_far(0, 3 * 8);
@@ -99,6 +112,7 @@ void HariMain(void) {
     init_manager();
     InitGlobalTaskController();
     AddTask((int) task_b_main);
+    AddTask((int) task_c_main);
     char s[40] = {};
     sprintf(s, "screenX = %d", Boot_Info_Ptr->screenX);
     init_sheet_control();
