@@ -33,4 +33,6 @@ void init_idt();
 
 void init_tss(int task_b_main_addr);
 
+void set_tss_desc(int tssNo, int tssAddr);
+
 #endif //WRITEOS_DSCTBL_H

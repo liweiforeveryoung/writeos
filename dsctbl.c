@@ -24,33 +24,6 @@ const int LIMIT_GDT = 0x0000ffff;
 const int ADR_GDT = 0x00270000;
 const int AR_TSS32 = 0x0089;
 
-struct TSS32 tss_a, tss_b;
-
-void init_tss(int task_b_main_addr) {
-    tss_a.ldtr = 0;
-    tss_a.iomap = 0x40000000;
-    load_tr(3 * 8);     // 当前执行的是第三号任务
-    tss_b.ldtr = 0;
-    tss_b.iomap = 0x40000000;
-    tss_b.eip = task_b_main_addr;
-    tss_b.eflags = 0x00000202; /* IF = 1; */
-    tss_b.eax = 0;
-    tss_b.ecx = 0;
-    tss_b.edx = 0;
-    tss_b.ebx = 0;
-    tss_b.esp = memory_alloc(global_memory_manager, 64 * 1024) + 64 * 1024; // 给任务 b 准备 64kb 的栈空间
-    tss_b.ebp = 0;
-    tss_b.esi = 0;
-    tss_b.edi = 0;
-    tss_b.es = 1 * 8;
-    tss_b.cs = 2 * 8;   // GDT 的二号
-    tss_b.ss = 1 * 8;   // GDT 的一号
-    tss_b.ds = 1 * 8;   // GDT 的一号
-    tss_b.fs = 1 * 8;   // GDT 的一号
-    tss_b.gs = 1 * 8;   // GDT 的一号
-}
-
-
 // 初始化 global descriptor table（段表）
 void init_gdt() {
     // gdt 的地址
@@ -60,11 +33,15 @@ void init_gdt() {
     for (i = 0; i < 8192; ++i) {
         set_segment_desc(gdt + i, 0, 0, 0);
     }
+    load_gdtr(LIMIT_GDT, (int) gdt);
     set_segment_desc(gdt + 1, 0xffffffff, 0x00000000, AR_DATA32_RW);
     set_segment_desc(gdt + 2, LIMIT_BOTPAK, ADR_BOTPAK, AR_CODE32_ER);
-    set_segment_desc(gdt + 3, 103, (int) &tss_a, AR_TSS32);
-    set_segment_desc(gdt + 4, 103, (int) &tss_b, AR_TSS32);
     load_gdtr(LIMIT_GDT, (int) gdt);
+}
+
+void set_tss_desc(int tssNo, int tssAddr) {
+    struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_GDT;
+    set_segment_desc(gdt + tssNo, 103, tssAddr, AR_TSS32);
 }
 
 void set_interrupt_desc(struct INTERRUPT_DESCRIPTOR *id, int offset, int selector, int ar) {

@@ -13,6 +13,7 @@
 #include "memorymanager.h"
 #include "sheet.h"
 #include "timercb.h"
+#include "task.h"
 
 unsigned int mem_test(unsigned int start, unsigned int end);
 
@@ -54,7 +55,7 @@ void task_b_main() {
     while (1) {
         count++;
         sprintf(buffer, "%d hello", count);
-        box_fill8(task_b_window->buffer,task_b_window->width,28,40,task_b_window->width,40 + 16,COL8_C6C6C6);
+        box_fill8(task_b_window->buffer, task_b_window->width, 28, 40, task_b_window->width, 40 + 16, COL8_C6C6C6);
         print_str(task_b_window->buffer, task_b_window->width, 28, 40, buffer, COLOR_WHITE);
         set_sheet_pos(task_b_window, task_b_window->x0, task_b_window->y0);
     }
@@ -96,7 +97,8 @@ void HariMain(void) {
     io_sti();       // todo 为什么把 sti 放在这里可以达到效果，明明 在 init_palette 里调用了 io_cli，按理按照 cli 之后就不该会鼠标有反应了
     init_palette();
     init_manager();
-    init_tss((int) task_b_main);
+    InitGlobalTaskController();
+    AddTask((int) task_b_main);
     char s[40] = {};
     sprintf(s, "screenX = %d", Boot_Info_Ptr->screenX);
     init_sheet_control();
