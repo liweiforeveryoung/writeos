@@ -14,7 +14,7 @@ struct Tss32 {
 
 struct Task {
     int sel; // sel用来存放GDT的编号
-    // int flags;
+    int priority;   // 优先级，值为 1 到 10，分别代表运行 0.01 秒 或者运行 0.1 秒
     struct Tss32 tss;
 };
 
@@ -26,7 +26,8 @@ struct TaskController {
 
 extern struct TaskController *GlobalTaskController;
 
-void AddTask(int taskAddr);
+// 添加任务，taskAddr 为任务的地址，priority 为任务的优先级，值为 1 到 10，分别代表执行 0.01 秒或者 0.1 秒
+void AddTask(int taskAddr, int priority);
 
 void InitGlobalTaskController();
 
