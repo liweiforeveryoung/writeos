@@ -24,6 +24,7 @@ void InitGlobalTaskController() {
     GlobalTaskController->tasks[0].tss.ldtr = 0;
     GlobalTaskController->tasks[0].tss.iomap = 0x40000000;
     GlobalTaskController->tasks[0].sel = 3 * 8;     // 起步為 3
+    GlobalTaskController->tasks[0].priority = 2;    // 运行 0.2 秒
     GlobalTaskController->runningTasksCount = 1;
     GlobalTaskController->currentTaskIndex = 0;
     int i = 0;
@@ -36,7 +37,7 @@ void InitGlobalTaskController() {
 struct TaskController *GlobalTaskController;
 
 
-void AddTask(int taskAddr) {
+void AddTask(int taskAddr, int priority) {
     struct Task *task = GlobalTaskController->tasks + GlobalTaskController->runningTasksCount;
     task->tss.ldtr = 0;
     task->tss.iomap = 0x40000000;
@@ -57,5 +58,6 @@ void AddTask(int taskAddr) {
     task->tss.fs = 1 * 8;   // GDT 的一号
     task->tss.gs = 1 * 8;   // GDT 的一号
     task->sel = (3 + GlobalTaskController->runningTasksCount) * 8;
+    task->priority = priority;
     GlobalTaskController->runningTasksCount++;
 }
