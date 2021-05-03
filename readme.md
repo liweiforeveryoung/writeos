@@ -1114,3 +1114,21 @@ void task_b_main(int arg) {
 ```
 
 ![image-20210502165425140](readme.assets/image-20210502165425140.png)
+
+###### tss 的一个坑：如果要维护某个状态的话，一定要在修改完状态之后再 switch_task
+
+例如：
+
+```c
+int count = 0;
+void callback(){
+    switch_task();
+    ++count;	// wrong way
+}
+void callback(){
+    ++count;	// correct way
+    switch_task();
+}
+```
+
+一定要在 `switch_task` 之前对 `count` 的状态进行修改，不然的话 `count` 的状态可能永远都没机会修改了！！！（血与泪的教训）

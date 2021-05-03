@@ -1,6 +1,7 @@
 #include "naskfunc.h"
 #include "dsctbl.h"
 #include "memorymanager.h"
+#include "task.h"
 
 void set_segment_desc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar) {
     if (limit > 0xfffff) {
@@ -22,13 +23,6 @@ const int ADR_BOTPAK = 0x00280000;
 const int LIMIT_GDT = 0x0000ffff;
 const int ADR_GDT = 0x00270000;
 const int AR_TSS32 = 0x0089;
-
-struct TSS32 {
-    int backlink, esp0, ss0, esp1, ss1, esp2, ss2, cr3;
-    int eip, eflags, eax, ecx, edx, ebx, esp, ebp, esi, edi;
-    int es, cs, ss, ds, fs, gs;
-    int ldtr, iomap;
-};
 
 struct TSS32 tss_a, tss_b;
 
