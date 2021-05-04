@@ -86,6 +86,7 @@ void console_task() {
     char buf[20] = {0};
     int key_cursor_x = 0;   // 当前键盘光标位置
     unsigned char input, type;
+    bool shift_key_down = false;    // 是否按下了 shift 键
     while (1) {
         io_cli();       // 禁用中断
         exist = read_data_from_buffer(signal_buffer, &input, &type);
@@ -93,10 +94,22 @@ void console_task() {
             io_sti();
             // 如果 buffer 内有数据
             if (type == FromKeyBoard) {
+                if (input == 0x2a) {
+                    // 按下 shift 键
+                    shift_key_down = true;
+                }
+                if (input == 0xaa) {
+                    // 松开 shift 键
+                    shift_key_down = false;
+                }
                 if (input < 0x54 || input == 0x0e) {
                     // input < 0x54 是为了只接收按下的字符，不接受松开的字符
                     if ((input < 0x54) && (KeyTableWithoutShift[input] != 0)) {
-                        buf[key_cursor_x] = KeyTableWithoutShift[input];
+                        if (shift_key_down) {
+                            buf[key_cursor_x] = KeyTableWithShift[input];
+                        } else {
+                            buf[key_cursor_x] = KeyTableWithoutShift[input];
+                        }
                         ++key_cursor_x;
                         // 最多打印十个字符
                         if (key_cursor_x > 10) {
