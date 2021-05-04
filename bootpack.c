@@ -78,8 +78,16 @@ void make_textbox8(struct Sheet *sht, int x0, int y0, int x1, int y1, int c) {
 // 控制台
 void console_task() {
     struct SignalBuffer *signal_buffer = order_signal();
-    struct Sheet *console_window = create_window(100, 100, 200, 200, "console");
-    make_textbox8(console_window, 8, 28, 200 - 8, 200 - 10, COL8_000000);
+    const short window_weight = 320;
+    const short window_height = 240;
+    const short title_bar_height = 32;   // 标题栏高度
+    const short border = 8;   // 边框宽度
+    struct Sheet *console_window = create_window(100, 100, window_weight, window_height, "console");
+    const short textbox_x0 = border;
+    const short textbox_y0 = title_bar_height;
+    const short textbox_x1 = window_weight - border;
+    const short textbox_y1 = window_height - border;
+    make_textbox8(console_window, textbox_x0, textbox_y0, textbox_x1, textbox_y1, COL8_000000);
     bool exist = false;
     char buf[20] = {0};
     int key_cursor_x = 0;   // 当前键盘光标位置
@@ -127,12 +135,11 @@ void console_task() {
                 }
                 if (need_redraw) {
                     buf[key_cursor_x] = '\0';
-                    box_fill8(console_window->buffer, console_window->width, 40, 28, 200 - 8, 28 + 16,
-                              COL8_000000);
-                    box_fill8(console_window->buffer, console_window->width, 40 + key_cursor_x * 8, 28,
-                              40 + (key_cursor_x + 1) * 8,
-                              28 + 16, COLOR_WHITE);
-                    print_str(console_window->buffer, console_window->width, 40, 28, buf, COLOR_WHITE);
+                    box_fill8(console_window->buffer, console_window->width, textbox_x0, textbox_y0, textbox_x1,
+                              textbox_y1, COL8_000000);
+                    box_fill8(console_window->buffer, console_window->width, border + key_cursor_x * 8, textbox_y0,
+                              border + (key_cursor_x + 1) * 8, textbox_y0 + 16, COLOR_WHITE);
+                    print_str(console_window->buffer, console_window->width, textbox_x0, textbox_y0, buf, COLOR_WHITE);
                     set_sheet_pos(console_window, console_window->x0, console_window->y0);
                     need_redraw = false;
                 }
