@@ -129,6 +129,8 @@ void console_task() {
                 }
                 if (input == 0x1c) {
                     // enter 键
+                    // 将当前行的最后一个白色小方块删掉
+                    draw_8_16_block(console_window, border + key_cursor_x * 8, current_line_y, COL8_000000);
                     current_line_y += 16;
                     key_cursor_x = 0;
                     need_redraw = true;
@@ -149,8 +151,9 @@ void console_task() {
                 }
                 if (need_redraw) {
                     buf[key_cursor_x] = '\0';
-                    box_fill8(console_window->buffer, console_window->width, textbox_x0, textbox_y0, textbox_x1,
-                              textbox_y1, COL8_000000);
+                    // 只刷新一行
+                    box_fill8(console_window->buffer, console_window->width, textbox_x0, current_line_y, textbox_x1,
+                              current_line_y + 16, COL8_000000);
                     draw_8_16_block(console_window, border + key_cursor_x * 8, current_line_y, COLOR_WHITE);
                     print_str(console_window->buffer, console_window->width, textbox_x0, current_line_y, buf,
                               COLOR_WHITE);
