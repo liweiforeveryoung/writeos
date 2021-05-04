@@ -85,6 +85,7 @@ void console_task() {
     int key_cursor_x = 0;   // 当前键盘光标位置
     unsigned char input, type;
     bool shift_key_down = false;    // 是否按下了 shift 键
+    bool need_redraw = false;    // 是否需要重绘
     while (1) {
         io_cli();       // 禁用中断
         exist = read_data_from_buffer(signal_buffer, &input, &type);
@@ -95,31 +96,36 @@ void console_task() {
                 if (input == 0x2a) {
                     // 按下 shift 键
                     shift_key_down = true;
+                    continue;
                 }
                 if (input == 0xaa) {
                     // 松开 shift 键
                     shift_key_down = false;
+                    continue;
                 }
-                if (input < 0x54 || input == 0x0e) {
-                    // input < 0x54 是为了只接收按下的字符，不接受松开的字符
-                    if ((input < 0x54) && (KeyTableWithoutShift[input] != 0)) {
-                        if (shift_key_down) {
-                            buf[key_cursor_x] = KeyTableWithShift[input];
-                        } else {
-                            buf[key_cursor_x] = KeyTableWithoutShift[input];
-                        }
-                        ++key_cursor_x;
-                        // 最多打印十个字符
-                        if (key_cursor_x > 10) {
-                            key_cursor_x = 10;
-                        }
-                    } else if (input == 0x0e) {
-                        // 退格键
-                        --key_cursor_x;
-                        if (key_cursor_x < 0) {
-                            key_cursor_x = 0;
-                        }
+                if (input == 0x0e) {
+                    // 退格键
+                    --key_cursor_x;
+                    if (key_cursor_x < 0) {
+                        key_cursor_x = 0;
                     }
+                    need_redraw = true;
+                }
+                // input < 0x54 是为了只接收按下的字符，不接受松开的字符
+                if ((input < 0x54) && (KeyTableWithoutShift[input] != 0)) {
+                    if (shift_key_down) {
+                        buf[key_cursor_x] = KeyTableWithShift[input];
+                    } else {
+                        buf[key_cursor_x] = KeyTableWithoutShift[input];
+                    }
+                    ++key_cursor_x;
+                    // 最多打印十个字符
+                    if (key_cursor_x > 10) {
+                        key_cursor_x = 10;
+                    }
+                    need_redraw = true;
+                }
+                if (need_redraw) {
                     buf[key_cursor_x] = '\0';
                     box_fill8(console_window->buffer, console_window->width, 40, 28, 200 - 8, 28 + 16,
                               COL8_000000);
@@ -128,6 +134,7 @@ void console_task() {
                               28 + 16, COLOR_WHITE);
                     print_str(console_window->buffer, console_window->width, 40, 28, buf, COLOR_WHITE);
                     set_sheet_pos(console_window, console_window->x0, console_window->y0);
+                    need_redraw = false;
                 }
             }
         } else {
