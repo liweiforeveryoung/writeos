@@ -25,8 +25,6 @@ struct Sheet *create_window(short x0, short y0, short width, short height, char 
 
 struct BootInfo *const Boot_Info_Ptr = (struct BootInfo *const) 0x00000ff0;
 
-struct SignalBuffer Signal_buffer;
-
 struct SheetControl *global_sheet_control;
 
 const short MouseWidth = 16;
@@ -61,6 +59,7 @@ void make_textbox8(struct Sheet *sht, int x0, int y0, int x1, int y1, int c) {
 
 // 控制台
 void console_task() {
+    struct SignalBuffer *signal_buffer = order_signal();
     struct Sheet *console_window = create_window(100, 100, 200, 200, "console");
     make_textbox8(console_window, 8, 28, 200 - 8, 200 - 10, COL8_000000);
     bool exist = false;
@@ -69,7 +68,7 @@ void console_task() {
     unsigned char input, type;
     while (1) {
         io_cli();       // 禁用中断
-        exist = read_data_from_buffer(&Signal_buffer, &input, &type);
+        exist = read_data_from_buffer(signal_buffer, &input, &type);
         if (exist) {
             io_sti();
             // 如果 buffer 内有数据
@@ -129,10 +128,10 @@ void HariMain(void) {
     init_idt();
     init_pic();
     init_pit();
-    init_signal_buffer(&Signal_buffer);
     init_palette();
     init_manager();
     InitGlobalTaskController();
+    initSignalBufferController();
     AddTask((int) console_task, 2);
     init_sheet_control();
 
@@ -162,6 +161,7 @@ void init_manager() {
 }
 
 void run() {
+    struct SignalBuffer *signal_buffer = order_signal();
     struct Sheet *window = create_window(30, 30, 160, 52, "main window");
     unsigned char input, type;
     bool mouse_is_ready;
@@ -175,7 +175,7 @@ void run() {
     init_mouse(&mouse_decoder);
     while (1) {
         io_cli();       // 禁用中断
-        exist = read_data_from_buffer(&Signal_buffer, &input, &type);
+        exist = read_data_from_buffer(signal_buffer, &input, &type);
         if (exist) {
             io_sti();
             // 如果 buffer 内有数据

@@ -42,14 +42,12 @@ void init_pic(void) {
 // 所以鼠标对应 int 2c
 // 键盘对应    int 21
 
-extern struct SignalBuffer Signal_buffer;
-
 // handler keyboard event
 void int_handler21(int *esp) {
     io_out8(PIC0_OCW2, 0x61);
     // 这个地方切忌要用 unsigned char 来接收，用 char 的话打印出来的东西会有点奇怪
     unsigned char input = io_in8(PORT_KEYDAT); // 想要处理下一次键盘中断有两个条件：1、io_out8 ocw 2、通过 io_in 把数据从端口中读出来；两者缺一不可
-    write_data_into_buffer(&Signal_buffer, input, FromKeyBoard);
+    signal_comes(input, FromKeyBoard);
 }
 
 // handler mouse event
@@ -57,7 +55,7 @@ void int_handler2c(int *esp) {
     io_out8(PIC1_OCW2, 0x64);   // 通知从 pic  4 号 irq 受理完成（从 pic 的 4号相当于 12 号）
     io_out8(PIC0_OCW2, 0x62);   // 通知主 pic 2 号受理完成，因为从 pic 接在主 pic 的 2号引线上
     unsigned char mouseInput = io_in8(PORT_KEYDAT);
-    write_data_into_buffer(&Signal_buffer, mouseInput, FromMouse);
+    signal_comes(mouseInput, FromMouse);
 }
 
 // 来自PIC0的不完全中断对策,由于芯片组的原因，在PIC初始化时，Athlon 64X2机等会发生一次中断
@@ -73,7 +71,7 @@ void int_handler27(int *esp) {
 // 来自定时器的中断
 void int_handler20(int *esp) {
     io_out8(PIC0_OCW2, 0x60);   // 通知主 pic 0 号受理完成
-    write_data_into_buffer(&Signal_buffer, 0, FromTimer);
+    signal_comes(0, FromTimer);
     switch_task();
 }
 
