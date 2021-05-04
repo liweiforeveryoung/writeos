@@ -23,16 +23,18 @@ struct SignalBuffer {
     int end_index;  // 最后一个有效 index 的下一个 index
 };
 
-void init_signal_buffer(struct SignalBuffer *buffer);
-
+// 订阅信号
+struct SignalBuffer *order_signal();
+// 初始化
+void initSignalBufferController();
 // 判斷 buffer 是否滿了
 bool buffer_is_full(struct SignalBuffer *buffer);
 
 // buffer 是否是空的
 bool buffer_is_empty(struct SignalBuffer *buffer);
 
-// 成功则返回 true，失败则返回 false
-bool write_data_into_buffer(struct SignalBuffer *buffer, unsigned char datum, unsigned char type);
+// 信号来啦
+void signal_comes(unsigned char datum, unsigned char type);
 
 bool read_data_from_buffer(struct SignalBuffer *buffer, unsigned char *datum, unsigned char *type);
 
