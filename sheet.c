@@ -38,7 +38,7 @@ void free_sheet_control(struct SheetControl *control) {
 
 // 刷新图层
 void refresh_sheet(struct Sheet *sheet) {
-    sheet_control_draw(sheet->m_pControl);
+    set_sheet_pos(sheet, sheet->x0, sheet->y0);
 }
 
 // 设置图层的坐标
