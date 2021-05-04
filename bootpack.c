@@ -101,7 +101,7 @@ void console_task() {
     unsigned char input, type;
     bool shift_key_down = false;    // 是否按下了 shift 键
     bool need_redraw = false;    // 是否需要重绘
-    short current_line = 0;     // 当前输入的是第几行
+    short current_line_y = textbox_y0;     // 当前输入的行的 y 坐标
     while (1) {
         io_cli();       // 禁用中断
         exist = read_data_from_buffer(signal_buffer, &input, &type);
@@ -129,7 +129,7 @@ void console_task() {
                 }
                 if (input == 0x1c) {
                     // enter 键
-                    current_line++;
+                    current_line_y += 16;
                     key_cursor_x = 0;
                     need_redraw = true;
                 }
@@ -149,7 +149,6 @@ void console_task() {
                 }
                 if (need_redraw) {
                     buf[key_cursor_x] = '\0';
-                    short current_line_y = textbox_y0 + current_line * 16;
                     box_fill8(console_window->buffer, console_window->width, textbox_x0, textbox_y0, textbox_x1,
                               textbox_y1, COL8_000000);
                     draw_8_16_block(console_window, border + key_cursor_x * 8, current_line_y, COLOR_WHITE);
