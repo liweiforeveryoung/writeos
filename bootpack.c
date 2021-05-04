@@ -94,6 +94,7 @@ void console_task() {
     unsigned char input, type;
     bool shift_key_down = false;    // 是否按下了 shift 键
     bool need_redraw = false;    // 是否需要重绘
+    short current_line = 0;     // 当前输入的是第几行
     while (1) {
         io_cli();       // 禁用中断
         exist = read_data_from_buffer(signal_buffer, &input, &type);
@@ -119,6 +120,12 @@ void console_task() {
                     }
                     need_redraw = true;
                 }
+                if (input == 0x1c) {
+                    // enter 键
+                    current_line++;
+                    key_cursor_x = 0;
+                    need_redraw = true;
+                }
                 // input < 0x54 是为了只接收按下的字符，不接受松开的字符
                 if ((input < 0x54) && (KeyTableWithoutShift[input] != 0)) {
                     if (shift_key_down) {
@@ -135,11 +142,13 @@ void console_task() {
                 }
                 if (need_redraw) {
                     buf[key_cursor_x] = '\0';
+                    short current_line_y = textbox_y0 + current_line * 16;
                     box_fill8(console_window->buffer, console_window->width, textbox_x0, textbox_y0, textbox_x1,
                               textbox_y1, COL8_000000);
-                    box_fill8(console_window->buffer, console_window->width, border + key_cursor_x * 8, textbox_y0,
-                              border + (key_cursor_x + 1) * 8, textbox_y0 + 16, COLOR_WHITE);
-                    print_str(console_window->buffer, console_window->width, textbox_x0, textbox_y0, buf, COLOR_WHITE);
+                    box_fill8(console_window->buffer, console_window->width, border + key_cursor_x * 8, current_line_y,
+                              border + (key_cursor_x + 1) * 8, current_line_y + 16, COLOR_WHITE);
+                    print_str(console_window->buffer, console_window->width, textbox_x0, current_line_y, buf,
+                              COLOR_WHITE);
                     set_sheet_pos(console_window, console_window->x0, console_window->y0);
                     need_redraw = false;
                 }
