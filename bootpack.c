@@ -47,41 +47,31 @@ static char KeyTable[0x54] = {
         '2', '3', '0', '.'
 };
 
+void make_textbox8(struct Sheet *sht, int x0, int y0, int x1, int y1, int c) {
+    box_fill8(sht->buffer, sht->width, x0 - 2, y0 - 3, x1 + 1, y0 - 3, COL8_848484);
+    box_fill8(sht->buffer, sht->width, x0 - 3, y0 - 3, x0 - 3, y1 + 1, COL8_848484);
+    box_fill8(sht->buffer, sht->width, x0 - 3, y1 + 2, x1 + 1, y1 + 2, COL8_FFFFFF);
+    box_fill8(sht->buffer, sht->width, x1 + 2, y0 - 3, x1 + 2, y1 + 2, COL8_FFFFFF);
+    box_fill8(sht->buffer, sht->width, x0 - 1, y0 - 2, x1 + 0, y0 - 2, COL8_000000);
+    box_fill8(sht->buffer, sht->width, x0 - 2, y0 - 2, x0 - 2, y1 + 0, COL8_000000);
+    box_fill8(sht->buffer, sht->width, x0 - 2, y1 + 1, x1 + 0, y1 + 1, COL8_C6C6C6);
+    box_fill8(sht->buffer, sht->width, x1 + 1, y0 - 2, x1 + 1, y1 + 1, COL8_C6C6C6);
+    box_fill8(sht->buffer, sht->width, x0 - 1, y0 - 1, x1 + 0, y1 + 0, c);
+}
 
-void task_b_main() {
-    struct Sheet *task_b_window = create_window(100, 100, 200, 100, "task b");
+// 控制台
+void console_task() {
+    struct Sheet *console_window = create_window(100, 100, 200, 200, "console");
+    make_textbox8(console_window, 8, 28, 200 - 8, 200 - 10, COL8_000000);
     char buffer[20] = {0};
     int count = 0;
     while (1) {
         count++;
         sprintf(buffer, "%d hello", count);
-        box_fill8(task_b_window->buffer, task_b_window->width, 28, 40, task_b_window->width, 40 + 16, COL8_C6C6C6);
-        print_str(task_b_window->buffer, task_b_window->width, 28, 40, buffer, COLOR_WHITE);
-        set_sheet_pos(task_b_window, task_b_window->x0, task_b_window->y0);
+        box_fill8(console_window->buffer, console_window->width, 28, 40, 200 - 8 * 2, 40 + 16, COL8_000000);
+        print_str(console_window->buffer, console_window->width, 28, 40, buffer, COLOR_WHITE);
+        set_sheet_pos(console_window, console_window->x0, console_window->y0);
     }
-}
-
-void task_c_main() {
-    struct Sheet *task_b_window = create_window(100, 200, 200, 100, "task c");
-    char buffer[20] = {0};
-    int count = 0;
-    while (1) {
-        count++;
-        sprintf(buffer, "%d hello", count);
-        box_fill8(task_b_window->buffer, task_b_window->width, 28, 40, task_b_window->width, 40 + 16, COL8_C6C6C6);
-        print_str(task_b_window->buffer, task_b_window->width, 28, 40, buffer, COLOR_WHITE);
-        set_sheet_pos(task_b_window, task_b_window->x0, task_b_window->y0);
-    }
-}
-
-// 切换到三号任务
-void taskswitch3(void) {
-    jmp_far(0, 3 * 8);
-}
-
-// 切换到四号任务
-void taskswitch4(void) {
-    jmp_far(0, 4 * 8);
 }
 
 void init_sheet_control() {
@@ -107,18 +97,11 @@ void HariMain(void) {
     init_pic();
     init_pit();
     init_signal_buffer(&Signal_buffer);
-    io_sti();       // todo 为什么把 sti 放在这里可以达到效果，明明 在 init_palette 里调用了 io_cli，按理按照 cli 之后就不该会鼠标有反应了
     init_palette();
     init_manager();
     InitGlobalTaskController();
-    AddTask((int) task_b_main, 2);
-    AddTask((int) task_c_main, 4);
-    char s[40] = {};
-    sprintf(s, "screenX = %d", Boot_Info_Ptr->screenX);
+    AddTask((int) console_task, 2);
     init_sheet_control();
-
-    struct Sheet *red_sheet = create_sheet(global_sheet_control, 20, 20, 100, 100);
-    set_sheet_color(red_sheet, COL8_FF0000);
 
     init_mouse_sheet(global_sheet_control);
     init_keyboard();
