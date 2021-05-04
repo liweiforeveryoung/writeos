@@ -75,6 +75,12 @@ void make_textbox8(struct Sheet *sht, int x0, int y0, int x1, int y1, int c) {
     box_fill8(sht->buffer, sht->width, x0 - 1, y0 - 1, x1 + 0, y1 + 0, c);
 }
 
+// 在指定位置处绘制一个 8 * 16 的小方块
+void draw_8_16_block(struct Sheet *sheet, short x0, short y0, unsigned char color) {
+    box_fill8(sheet->buffer, sheet->width, x0, y0,
+              x0 + 8, y0 + 16, color);
+}
+
 // 控制台
 void console_task() {
     struct SignalBuffer *signal_buffer = order_signal();
@@ -88,6 +94,7 @@ void console_task() {
     const short textbox_x1 = window_weight - border;
     const short textbox_y1 = window_height - border;
     make_textbox8(console_window, textbox_x0, textbox_y0, textbox_x1, textbox_y1, COL8_000000);
+    refresh_sheet(console_window);
     bool exist = false;
     char buf[20] = {0};
     int key_cursor_x = 0;   // 当前键盘光标位置
@@ -145,11 +152,10 @@ void console_task() {
                     short current_line_y = textbox_y0 + current_line * 16;
                     box_fill8(console_window->buffer, console_window->width, textbox_x0, textbox_y0, textbox_x1,
                               textbox_y1, COL8_000000);
-                    box_fill8(console_window->buffer, console_window->width, border + key_cursor_x * 8, current_line_y,
-                              border + (key_cursor_x + 1) * 8, current_line_y + 16, COLOR_WHITE);
+                    draw_8_16_block(console_window, border + key_cursor_x * 8, current_line_y, COLOR_WHITE);
                     print_str(console_window->buffer, console_window->width, textbox_x0, current_line_y, buf,
                               COLOR_WHITE);
-                    set_sheet_pos(console_window, console_window->x0, console_window->y0);
+                    refresh_sheet(console_window);
                     need_redraw = false;
                 }
             }
