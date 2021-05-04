@@ -91,7 +91,7 @@ void console_task() {
                         }
                     }
                     buf[key_cursor_x] = '\0';
-                    box_fill8(console_window->buffer, console_window->width, 40, 28,200 - 8, 28 + 16,
+                    box_fill8(console_window->buffer, console_window->width, 40, 28, 200 - 8, 28 + 16,
                               COL8_000000);
                     box_fill8(console_window->buffer, console_window->width, 40 + key_cursor_x * 8, 28,
                               40 + (key_cursor_x + 1) * 8,
@@ -173,67 +173,33 @@ void run() {
     struct MouseDecoder mouse_decoder;
     enum Button button;
     init_mouse(&mouse_decoder);
-    char buf[20] = {0};
-    int key_cursor_x = 0;   // 当前键盘光标位置
     while (1) {
         io_cli();       // 禁用中断
         exist = read_data_from_buffer(&Signal_buffer, &input, &type);
         if (exist) {
             io_sti();
-            char str[10] = {0};
             // 如果 buffer 内有数据
-            switch (type) {
-                case FromMouse:
-                    mouse_is_ready = recv_data(&mouse_decoder, input);
-                    if (mouse_is_ready) {
-                        mouse_x = get_mouse_x(&mouse_decoder);
-                        mouse_y = get_mouse_y(&mouse_decoder);
-                        x += mouse_x;
-                        y += mouse_y;
+            if (type == FromMouse) {
+                mouse_is_ready = recv_data(&mouse_decoder, input);
+                if (mouse_is_ready) {
+                    mouse_x = get_mouse_x(&mouse_decoder);
+                    mouse_y = get_mouse_y(&mouse_decoder);
+                    x += mouse_x;
+                    y += mouse_y;
 
-                        x = min_short(x, Boot_Info_Ptr->screenX - MouseWidth);
-                        x = max_short(x, 0);
-                        y = min_short(y, Boot_Info_Ptr->screenY - MouseHeight);
-                        y = max_short(y, 0);
+                    x = min_short(x, Boot_Info_Ptr->screenX - MouseWidth);
+                    x = max_short(x, 0);
+                    y = min_short(y, Boot_Info_Ptr->screenY - MouseHeight);
+                    y = max_short(y, 0);
 
-                        button = get_button(&mouse_decoder);
-                        set_sheet_pos(mouse_sheet, x, y);
+                    button = get_button(&mouse_decoder);
+                    set_sheet_pos(mouse_sheet, x, y);
 
-                        // 前行拽着窗口移动
-                        if (button == Left) {
-                            set_sheet_pos(window, x - 80, y - 8);
-                        }
+                    // 前行拽着窗口移动
+                    if (button == Left) {
+                        set_sheet_pos(window, x - 80, y - 8);
                     }
-
-                    break;
-                case FromKeyBoard:
-                    if (input < 0x54 || input == 0x0e) {
-                        // input < 0x54 是为了只接收按下的字符，不接受松开的字符
-                        if ((input < 0x54) && (KeyTable[input] != 0)) {
-                            buf[key_cursor_x] = KeyTable[input];
-                            ++key_cursor_x;
-                            // 最多打印十个字符
-                            if (key_cursor_x > 10) {
-                                key_cursor_x = 10;
-                            }
-                        } else if (input == 0x0e) {
-                            // 退格键
-                            --key_cursor_x;
-                            if (key_cursor_x < 0) {
-                                key_cursor_x = 0;
-                            }
-                        }
-                        buf[key_cursor_x] = '\0';
-                        box_fill8(window->buffer, window->width, 40, 28, window->width, 28 + 16, COL8_C6C6C6);
-                        box_fill8(window->buffer, window->width, 40 + key_cursor_x * 8, 28, 40 + (key_cursor_x + 1) * 8,
-                                  28 + 16, COLOR_WHITE);
-                        print_str(window->buffer, window->width, 40, 28, buf, COLOR_WHITE);
-                        set_sheet_pos(window, window->x0, window->y0);
-                    }
-                    break;
-                case FromTimer:
-                    timer_ctl_tick(&GlobalTimerCallbackCtl);
-                default:
+                }
             }
         } else {
             // 如果 buffer 内没有数据 就继续睡觉
