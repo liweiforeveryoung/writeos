@@ -96,7 +96,9 @@ void console_task() {
     make_textbox8(console_window, textbox_x0, textbox_y0, textbox_x1, textbox_y1, COL8_000000);
     refresh_sheet(console_window);
     bool exist = false;
-    char buf[20] = {0};
+    // (textbox_x1 - textbox_x0) / 8 - 1 因为最后有一个白色小方块，所以要 -1 , = 37
+    const short max_char_count_of_line = (320 - 8 - 8) / 8 - 1;
+    char buf[37] = {0};
     int key_cursor_x = 0;   // 当前键盘光标位置
     unsigned char input, type;
     bool shift_key_down = false;    // 是否按下了 shift 键
@@ -132,6 +134,9 @@ void console_task() {
                     // 将当前行的最后一个白色小方块删掉
                     draw_8_16_block(console_window, border + key_cursor_x * 8, current_line_y, COL8_000000);
                     current_line_y += 16;
+                    if (current_line_y + 16 >= textbox_y1) {
+                        current_line_y = textbox_y1 - 16;
+                    }
                     key_cursor_x = 0;
                     need_redraw = true;
                 }
@@ -144,8 +149,8 @@ void console_task() {
                     }
                     ++key_cursor_x;
                     // 最多打印十个字符
-                    if (key_cursor_x > 10) {
-                        key_cursor_x = 10;
+                    if (key_cursor_x > max_char_count_of_line) {
+                        key_cursor_x = max_char_count_of_line;
                     }
                     need_redraw = true;
                 }
