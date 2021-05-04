@@ -63,14 +63,47 @@ void make_textbox8(struct Sheet *sht, int x0, int y0, int x1, int y1, int c) {
 void console_task() {
     struct Sheet *console_window = create_window(100, 100, 200, 200, "console");
     make_textbox8(console_window, 8, 28, 200 - 8, 200 - 10, COL8_000000);
-    char buffer[20] = {0};
-    int count = 0;
+    bool exist = false;
+    char buf[20] = {0};
+    int key_cursor_x = 0;   // 当前键盘光标位置
+    unsigned char input, type;
     while (1) {
-        count++;
-        sprintf(buffer, "%d hello", count);
-        box_fill8(console_window->buffer, console_window->width, 28, 40, 200 - 8 * 2, 40 + 16, COL8_000000);
-        print_str(console_window->buffer, console_window->width, 28, 40, buffer, COLOR_WHITE);
-        set_sheet_pos(console_window, console_window->x0, console_window->y0);
+        io_cli();       // 禁用中断
+        exist = read_data_from_buffer(&Signal_buffer, &input, &type);
+        if (exist) {
+            io_sti();
+            // 如果 buffer 内有数据
+            if (type == FromKeyBoard) {
+                if (input < 0x54 || input == 0x0e) {
+                    // input < 0x54 是为了只接收按下的字符，不接受松开的字符
+                    if ((input < 0x54) && (KeyTable[input] != 0)) {
+                        buf[key_cursor_x] = KeyTable[input];
+                        ++key_cursor_x;
+                        // 最多打印十个字符
+                        if (key_cursor_x > 10) {
+                            key_cursor_x = 10;
+                        }
+                    } else if (input == 0x0e) {
+                        // 退格键
+                        --key_cursor_x;
+                        if (key_cursor_x < 0) {
+                            key_cursor_x = 0;
+                        }
+                    }
+                    buf[key_cursor_x] = '\0';
+                    box_fill8(console_window->buffer, console_window->width, 40, 28,200 - 8, 28 + 16,
+                              COL8_000000);
+                    box_fill8(console_window->buffer, console_window->width, 40 + key_cursor_x * 8, 28,
+                              40 + (key_cursor_x + 1) * 8,
+                              28 + 16, COLOR_WHITE);
+                    print_str(console_window->buffer, console_window->width, 40, 28, buf, COLOR_WHITE);
+                    set_sheet_pos(console_window, console_window->x0, console_window->y0);
+                }
+            }
+        } else {
+            // 如果 buffer 内没有数据 就继续睡觉
+            io_stihlt();    // 原因见 readme
+        }
     }
 }
 
