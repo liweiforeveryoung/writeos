@@ -3,9 +3,11 @@
 //
 #include "signalbuffer.h"
 #include "memorymanager.h"
+#include "naskfunc.h"
 
 // 成功则返回 true，失败则返回 false
 bool write_data_into_buffer(struct SignalBuffer *buffer, unsigned char datum, unsigned char type);
+
 // 一个辅助小函数
 static int next_index(int length, int cur_index) {
     return ++cur_index % length;
@@ -43,13 +45,14 @@ void signal_comes(unsigned char datum, unsigned char type) {
 
 // 订阅信号
 struct SignalBuffer *order_signal() {
-    // todo 屏蔽信号
+    io_cli();
     struct SignalBuffer *buffer = (struct SignalBuffer *) memory_alloc(global_memory_manager,
                                                                        sizeof(struct SignalBuffer));
     buffer->cur_index = 0;
     buffer->end_index = 0;
     SignalBufferController->buffers[SignalBufferController->count] = buffer;
     SignalBufferController->count++;
+    io_sti();
     return buffer;
 }
 
