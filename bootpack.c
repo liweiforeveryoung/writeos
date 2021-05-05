@@ -14,6 +14,7 @@
 #include "task.h"
 #include "textbox.h"
 #include "string.h"
+#include "file.h"
 
 unsigned int mem_test(unsigned int start, unsigned int end);
 
@@ -64,13 +65,7 @@ static char KeyTableWithShift[] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0x5c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x5c, 0, 0
 };
-struct FILEINFO {
-    unsigned char name[8], ext[3], type;
-    char reserve[10];
-    unsigned short time, date, clustno;
-    unsigned int size;
-};
-#define ADR_DISKIMG        0x00100000
+
 
 // 控制台
 void console_task() {
@@ -83,7 +78,6 @@ void console_task() {
     struct Sheet *console_window = create_window(100, 100, window_weight, window_height, "console");
     struct TextBox *textBox = newTextBox(console_window, border, title_bar_height, window_weight - border,
                                          window_height - border);
-    struct FILEINFO *finfo = (struct FILEINFO *) (ADR_DISKIMG + 0x002600);
     bool shift_key_down = false;    // 是否按下了 shift 键
     unsigned char input, type;
     while (1) {
@@ -114,18 +108,18 @@ void console_task() {
                         char s[100] = {0};
                         int x, y;
                         for (x = 0; x < 224; x++) {
-                            if (finfo[x].name[0] == 0x00) {
+                            if (BaseFileInfoAddress[x].name[0] == Empty) {
                                 break;
                             }
-                            if (finfo[x].name[0] != 0xe5) {
-                                if ((finfo[x].type & 0x18) == 0) {
-                                    sprintf(s, "filename.ext   %7d", finfo[x].size);
+                            if (BaseFileInfoAddress[x].name[0] != Deleted) {
+                                if ((BaseFileInfoAddress[x].type & (Dir | NotFile)) == 0) {
+                                    sprintf(s, "filename.ext   %7d", BaseFileInfoAddress[x].size);
                                     for (y = 0; y < 8; y++) {
-                                        s[y] = finfo[x].name[y];
+                                        s[y] = BaseFileInfoAddress[x].name[y];
                                     }
-                                    s[9] = finfo[x].ext[0];
-                                    s[10] = finfo[x].ext[1];
-                                    s[11] = finfo[x].ext[2];
+                                    s[9] = BaseFileInfoAddress[x].ext[0];
+                                    s[10] = BaseFileInfoAddress[x].ext[1];
+                                    s[11] = BaseFileInfoAddress[x].ext[2];
                                     handle_new_line(textBox, s);
                                     handle_redraw(textBox);
                                 }
