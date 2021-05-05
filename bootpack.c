@@ -134,7 +134,16 @@ void console_task() {
                     // 将当前行的最后一个白色小方块删掉
                     draw_8_16_block(console_window, border + key_cursor_x * 8, current_line_y, COL8_000000);
                     current_line_y += 16;
-                    if (current_line_y + 16 >= textbox_y1) {
+                    if (current_line_y > textbox_y1 - 16) {
+                        // 意味着需要滚动了
+                        short x, y;
+                        char color;
+                        for (y = textbox_y0; y < textbox_y1 - 16; ++y) {
+                            for (x = textbox_x0; x < textbox_x1; ++x) {
+                                color = get_pixel_color(console_window, x, y + 16);
+                                set_pixel_color(console_window, x, y, color);
+                            }
+                        }
                         current_line_y = textbox_y1 - 16;
                     }
                     key_cursor_x = 0;
