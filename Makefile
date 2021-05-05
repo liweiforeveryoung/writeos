@@ -50,6 +50,8 @@ $(OSNAME).img : $(IPLNAME).bin $(OSNAME).sys Makefile
 	$(EDIMG) imgin:../z_tools/fdimg0at.tek   \
 		wbinimg src:$(IPLNAME).bin len:512 from:0 to:0 \
 		copy from:$(OSNAME).sys to:@: \
+		copy from:ipl10.nas to:@: \
+        copy from:make.bat to:@: \
 		imgout:$(OSNAME).img
 
 # 生成规则
