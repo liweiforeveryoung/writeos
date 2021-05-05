@@ -24,3 +24,12 @@ bool FormatFileInfoToBuffer(struct FileInfo *file, char *buffer) {
 }
 
 struct FileInfo *BaseFileInfoAddress = (struct FileInfo *) (ADR_DISKIMG + 0x002600);
+
+struct FileInfo *FindFileByName(char *fileName) {
+    // 写死，返回 make.bat
+    return BaseFileInfoAddress + 2;
+}
+
+char *GetFileAddress(struct FileInfo *file) {
+    return (char *) (file->clustno * 512 + 0x003e00 + ADR_DISKIMG);
+}

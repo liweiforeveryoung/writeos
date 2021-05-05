@@ -115,6 +115,22 @@ void console_task() {
                                 break;
                             }
                         }
+                    } else if (strEqual(textBox->line_buffer, "cat")) {
+                        handle_enter(textBox);
+                        char *fileName = "MAKE.BAT";
+                        struct FileInfo *file = FindFileByName(fileName);
+                        if (file == nullptr) {
+                            handle_new_line(textBox, "file is not exist");
+                        } else {
+                            char *beginAddress = GetFileAddress(file);
+                            char *endAddress = beginAddress + file->size;
+                            char *p;
+                            for (p = beginAddress; p < endAddress; ++p) {
+                                handle_new_char_come(textBox, *p);
+                            }
+                            handle_enter(textBox);
+                        }
+                        handle_redraw(textBox);
                     } else {
                         handle_enter(textBox);
                         handle_redraw(textBox);

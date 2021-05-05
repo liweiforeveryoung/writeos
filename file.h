@@ -32,5 +32,12 @@ enum FileType {
 // 将文件的信息输入到 buffer 中，返回该文件是否存在
 bool FormatFileInfoToBuffer(struct FileInfo *file, char *buffer);
 
+// 根据文件名来查找文件
+struct FileInfo *FindFileByName(char *fileName);
+
+// 获取文件的真实地址
+char *GetFileAddress(struct FileInfo *file);
+
 extern struct FileInfo *BaseFileInfoAddress;
+
 #endif //WRITEOS_FILE_H
