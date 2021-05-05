@@ -138,6 +138,10 @@ void handle_new_char_come(struct TextBox *textBox, char newChar) {
     textBox->need_redraw = true;
 }
 
+// 更新一行字符串
+void handle_new_line(struct TextBox *textBox, char *line) {
+}
+
 // 重新绘制
 void handle_redraw(struct TextBox *textBox) {
     if (textBox->need_redraw) {
@@ -145,29 +149,6 @@ void handle_redraw(struct TextBox *textBox) {
         box_fill8(textBox->sheet->buffer, textBox->sheet->width, textBox->textbox_x0, textBox->current_line_y,
                   textBox->textbox_x1,
                   textBox->current_line_y + 16, COL8_000000);
-        if (textBox->needNewLine) {
-            print_str(textBox->sheet->buffer, textBox->sheet->width, textBox->textbox_x0,
-                      textBox->current_line_y,
-                      "hello",
-                      COLOR_WHITE);
-            textBox->current_line_y += 16;
-            if (textBox->current_line_y > textBox->textbox_y1 - 16) {
-                // 意味着需要滚动了
-                short x, y;
-                char color;
-                for (y = textBox->textbox_y0; y < textBox->textbox_y1 - 16; ++y) {
-                    for (x = textBox->textbox_x0; x < textBox->textbox_x1; ++x) {
-                        color = get_pixel_color(textBox->sheet, x, y + 16);
-                        set_pixel_color(textBox->sheet, x, y, color);
-                    }
-                }
-                textBox->current_line_y = textBox->textbox_y1 - 16;
-                box_fill8(textBox->sheet->buffer, textBox->sheet->width, textBox->textbox_x0,
-                          textBox->current_line_y,
-                          textBox->textbox_x1, textBox->current_line_y + 16, COL8_000000);
-            }
-            textBox->needNewLine = false;
-        }
         textBox->line_buffer[textBox->key_cursor_x] = '\0';
         draw_8_16_block(textBox->sheet, textBox->textbox_x0 + textBox->key_cursor_x * 8, textBox->current_line_y,
                         COLOR_WHITE);
@@ -239,6 +220,13 @@ void console_task() {
                 }
                 if (input == 0x1c) {
                     // enter 键
+                    handle_enter(textBox);
+                    const char *line = "hello";
+                    int i;
+                    for (i = 0; line[i] != '\0'; i++) {
+                        handle_new_char_come(textBox, line[i]);
+                    }
+                    handle_redraw(textBox);
                     handle_enter(textBox);
                 }
                 // input < 0x54 是为了只接收按下的字符，不接受松开的字符
