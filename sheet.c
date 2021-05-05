@@ -191,3 +191,9 @@ char get_pixel_color(struct Sheet *sheet, int x, int y) {
 void set_pixel_color(struct Sheet *sheet, int x, int y, char color) {
     sheet->buffer[y * sheet->width + x] = color;
 }
+
+// 在指定位置处绘制一个 8 * 16 的小方块
+void draw_8_16_block(struct Sheet *sheet, short x0, short y0, unsigned char color) {
+    box_fill8(sheet->buffer, sheet->width, x0, y0,
+              x0 + 8, y0 + 16, color);
+}
