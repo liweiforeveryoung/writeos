@@ -104,6 +104,7 @@ void console_task() {
     bool shift_key_down = false;    // 是否按下了 shift 键
     bool need_redraw = false;    // 是否需要重绘
     short current_line_y = textbox_y0;     // 当前输入的行的 y 坐标
+    bool needNewLine = false;
     while (1) {
         io_cli();       // 禁用中断
         exist = read_data_from_buffer(signal_buffer, &input, &type);
@@ -148,6 +149,7 @@ void console_task() {
                     }
                     key_cursor_x = 0;
                     need_redraw = true;
+                    needNewLine = true;
                 }
                 // input < 0x54 是为了只接收按下的字符，不接受松开的字符
                 if ((input < 0x54) && (KeyTableWithoutShift[input] != 0)) {
@@ -164,10 +166,30 @@ void console_task() {
                     need_redraw = true;
                 }
                 if (need_redraw) {
-                    buf[key_cursor_x] = '\0';
                     // 只刷新一行
                     box_fill8(console_window->buffer, console_window->width, textbox_x0, current_line_y, textbox_x1,
                               current_line_y + 16, COL8_000000);
+                    if (needNewLine) {
+                        print_str(console_window->buffer, console_window->width, textbox_x0, current_line_y, "hello",
+                                  COLOR_WHITE);
+                        current_line_y += 16;
+                        if (current_line_y > textbox_y1 - 16) {
+                            // 意味着需要滚动了
+                            short x, y;
+                            char color;
+                            for (y = textbox_y0; y < textbox_y1 - 16; ++y) {
+                                for (x = textbox_x0; x < textbox_x1; ++x) {
+                                    color = get_pixel_color(console_window, x, y + 16);
+                                    set_pixel_color(console_window, x, y, color);
+                                }
+                            }
+                            current_line_y = textbox_y1 - 16;
+                            box_fill8(console_window->buffer, console_window->width, textbox_x0, current_line_y,
+                                      textbox_x1, current_line_y + 16, COL8_000000);
+                        }
+                        needNewLine = false;
+                    }
+                    buf[key_cursor_x] = '\0';
                     draw_8_16_block(console_window, border + key_cursor_x * 8, current_line_y, COLOR_WHITE);
                     print_str(console_window->buffer, console_window->width, textbox_x0, current_line_y, buf,
                               COLOR_WHITE);
