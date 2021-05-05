@@ -100,9 +100,24 @@ void console_task() {
                 }
                 if (input == 0x1c) {
                     // enter 键
-                    handle_enter(textBox);
-                    handle_new_line(textBox, "hello world");
-                    handle_redraw(textBox);
+                    char *line_buffer = textBox->line_buffer;
+                    char *hello = "hello";
+
+                    bool isHello = true;
+                    int i;
+                    for (i = 0; i < 5; ++i) {
+                        if (line_buffer[i] != hello[i]) {
+                            isHello = false;
+                        }
+                    }
+                    if (isHello) {
+                        handle_enter(textBox);
+                        handle_new_line(textBox, "world");
+                        handle_redraw(textBox);
+                    } else {
+                        handle_enter(textBox);
+                        handle_redraw(textBox);
+                    }
                 }
                 // input < 0x54 是为了只接收按下的字符，不接受松开的字符
                 if ((input < 0x54) && (KeyTableWithoutShift[input] != 0)) {
