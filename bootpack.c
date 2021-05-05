@@ -87,7 +87,7 @@ void console_task() {
     const short window_weight = 320;
     const short window_height = 240;
     const short title_bar_height = 32;   // 标题栏高度
-    const short border = 8;   // 边框宽度
+    const short border = 16;   // 边框宽度
     struct Sheet *console_window = create_window(100, 100, window_weight, window_height, "console");
     const short textbox_x0 = border;
     const short textbox_y0 = title_bar_height;
@@ -96,9 +96,9 @@ void console_task() {
     make_textbox8(console_window, textbox_x0, textbox_y0, textbox_x1, textbox_y1, COL8_000000);
     refresh_sheet(console_window);
     bool exist = false;
-    // (textbox_x1 - textbox_x0) / 8 - 1 因为最后有一个白色小方块，所以要 -1 , = 37
-    const short max_char_count_of_line = (320 - 8 - 8) / 8 - 1;
-    char buf[37] = {0};
+    // (textbox_x1 - textbox_x0) / 8 - 1 因为最后有一个白色小方块，所以要 -1 , = 35
+    const short max_char_count_of_line = (320 - 16 - 16) / 8 - 1;
+    char buf[35] = {0};
     int key_cursor_x = 0;   // 当前键盘光标位置
     unsigned char input, type;
     bool shift_key_down = false;    // 是否按下了 shift 键
