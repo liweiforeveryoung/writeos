@@ -13,16 +13,16 @@ struct FileInfo {
 #define ADR_DISKIMG        0x00100000
 
 enum FileStatus {
-    Empty = 0x00,
-    Deleted = 0xe5,
+    Empty = 0x00,   // 这一段不包含任何文件名信息
+    Deleted = 0xe5, // 这个文件已经被删除了
 };
 enum FileType {
-    ReadOnly = 0x01,
-    Hide = 0x02,
-    SysFile = 0x04,
-    NotFile = 0x08,
-    Dir = 0x10,
-    NormalFile = 0x20
+    ReadOnly = 0x01,    // 只读文件（不可写入）
+    Hide = 0x02,    // 隐藏文件
+    SysFile = 0x04, // 系统文件
+    NotFile = 0x08, // 非文件信息（比如磁盘名称等）
+    Dir = 0x10,     // 目录
+    NormalFile = 0x20 // 普通文件
 };
 
 struct FileInfo *BaseFileInfoAddress = (struct FileInfo *) (ADR_DISKIMG + 0x002600);
