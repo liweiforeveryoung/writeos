@@ -44,6 +44,12 @@ void set_sheet_color(struct Sheet *sheet, char color);
 // 刷新图层
 void refresh_sheet(struct Sheet *sheet);
 
+// 获取某个位置的 color
+char get_pixel_color(struct Sheet *sheet, int x, int y);
+
+// 设置某个位置的 color
+void set_pixel_color(struct Sheet *sheet, int x, int y, char color);
+
 // 设置图层的坐标
 void set_sheet_pos(struct Sheet *sheet, short new_x, short new_y);
 

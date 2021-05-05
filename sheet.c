@@ -183,3 +183,11 @@ bool move_sheet_to_level(struct Sheet *sheet, int dstLevel) {
     control->sheets[dstLevel] = sheet;
     return true;
 }
+
+char get_pixel_color(struct Sheet *sheet, int x, int y) {
+    return sheet->buffer[y * sheet->width + x];
+}
+
+void set_pixel_color(struct Sheet *sheet, int x, int y, char color) {
+    sheet->buffer[y * sheet->width + x] = color;
+}
