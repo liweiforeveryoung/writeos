@@ -63,6 +63,13 @@ static char KeyTableWithShift[] = {
         0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0x5c, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x5c, 0, 0
 };
+struct FILEINFO {
+    unsigned char name[8], ext[3], type;
+    char reserve[10];
+    unsigned short time, date, clustno;
+    unsigned int size;
+};
+#define ADR_DISKIMG        0x00100000
 
 // 控制台
 void console_task() {
@@ -75,6 +82,7 @@ void console_task() {
     struct Sheet *console_window = create_window(100, 100, window_weight, window_height, "console");
     struct TextBox *textBox = newTextBox(console_window, border, title_bar_height, window_weight - border,
                                          window_height - border);
+    struct FILEINFO *finfo = (struct FILEINFO *) (ADR_DISKIMG + 0x002600);
     bool shift_key_down = false;    // 是否按下了 shift 键
     unsigned char input, type;
     while (1) {
@@ -101,19 +109,38 @@ void console_task() {
                 if (input == 0x1c) {
                     // enter 键
                     char *line_buffer = textBox->line_buffer;
-                    char *hello = "hello";
+                    char *dir = "dir";
 
-                    bool isHello = true;
+                    bool isDir = true;
                     int i;
-                    for (i = 0; i < 5; ++i) {
-                        if (line_buffer[i] != hello[i]) {
-                            isHello = false;
+                    for (i = 0; i < 3; ++i) {
+                        if (line_buffer[i] != dir[i]) {
+                            isDir = false;
                         }
                     }
-                    if (isHello) {
+                    if (isDir) {
                         handle_enter(textBox);
-                        handle_new_line(textBox, "world");
-                        handle_redraw(textBox);
+                        char s[100] = {0};
+                        int x, y;
+                        for (x = 0; x < 224; x++) {
+                            if (finfo[x].name[0] == 0x00) {
+                                break;
+                            }
+                            if (finfo[x].name[0] != 0xe5) {
+                                if ((finfo[x].type & 0x18) == 0) {
+                                    sprintf(s, "filename.ext   %7d", finfo[x].size);
+                                    for (y = 0; y < 8; y++) {
+                                        s[y] = finfo[x].name[y];
+                                    }
+                                    s[9] = finfo[x].ext[0];
+                                    s[10] = finfo[x].ext[1];
+                                    s[11] = finfo[x].ext[2];
+                                    handle_new_line(textBox, s);
+                                    handle_redraw(textBox);
+                                }
+                            }
+                        }
+
                     } else {
                         handle_enter(textBox);
                         handle_redraw(textBox);
