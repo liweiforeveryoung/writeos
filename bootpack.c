@@ -81,6 +81,19 @@ void draw_8_16_block(struct Sheet *sheet, short x0, short y0, unsigned char colo
               x0 + 8, y0 + 16, color);
 }
 
+struct TextBox {
+    struct Sheet *sheet;
+    short textbox_x0;
+    short textbox_y0;
+    short textbox_x1;
+    short textbox_y1;
+    bool need_redraw;
+    bool needNewLine;
+    short key_cursor_x;   // 当前键盘光标位置
+    short max_char_count_of_line;   // 每行的最大输入字符
+    short current_line_y;
+};
+
 // 控制台
 void console_task() {
     struct SignalBuffer *signal_buffer = order_signal();
@@ -88,23 +101,26 @@ void console_task() {
     const short window_height = 240;
     const short title_bar_height = 32;   // 标题栏高度
     const short border = 16;   // 边框宽度
-    struct Sheet *console_window = create_window(100, 100, window_weight, window_height, "console");
-    const short textbox_x0 = border;
-    const short textbox_y0 = title_bar_height;
-    const short textbox_x1 = window_weight - border;
-    const short textbox_y1 = window_height - border;
-    make_textbox8(console_window, textbox_x0, textbox_y0, textbox_x1, textbox_y1, COL8_000000);
-    refresh_sheet(console_window);
     bool exist = false;
+    struct TextBox textBox;
+    struct Sheet *console_window = create_window(100, 100, window_weight, window_height, "console");
+    textBox.sheet = console_window;
+    textBox.textbox_x0 = border;
+    textBox.textbox_y0 = title_bar_height;
+    textBox.textbox_x1 = window_weight - border;
+    textBox.textbox_y1 = window_height - border;
+    make_textbox8(console_window, textBox.textbox_x0, textBox.textbox_y0, textBox.textbox_x1, textBox.textbox_y1,
+                  COL8_000000);
+    refresh_sheet(console_window);
     // (textbox_x1 - textbox_x0) / 8 - 1 因为最后有一个白色小方块，所以要 -1 , = 35
-    const short max_char_count_of_line = (320 - 16 - 16) / 8 - 1;
+    textBox.max_char_count_of_line = (textBox.textbox_x1 - textBox.textbox_x0) / 8 - 1;
     char buf[35] = {0};
-    int key_cursor_x = 0;   // 当前键盘光标位置
     unsigned char input, type;
+    textBox.key_cursor_x = 0;   // 当前键盘光标位置
     bool shift_key_down = false;    // 是否按下了 shift 键
-    bool need_redraw = false;    // 是否需要重绘
-    short current_line_y = textbox_y0;     // 当前输入的行的 y 坐标
-    bool needNewLine = false;
+    textBox.need_redraw = false;    // 是否需要重绘
+    textBox.current_line_y = textBox.textbox_y0;     // 当前输入的行的 y 坐标
+    textBox.needNewLine = false;
     while (1) {
         io_cli();       // 禁用中断
         exist = read_data_from_buffer(signal_buffer, &input, &type);
@@ -124,77 +140,84 @@ void console_task() {
                 }
                 if (input == 0x0e) {
                     // 退格键
-                    --key_cursor_x;
-                    if (key_cursor_x < 0) {
-                        key_cursor_x = 0;
+                    --textBox.key_cursor_x;
+                    if (textBox.key_cursor_x < 0) {
+                        textBox.key_cursor_x = 0;
                     }
-                    need_redraw = true;
+                    textBox.need_redraw = true;
                 }
                 if (input == 0x1c) {
                     // enter 键
                     // 将当前行的最后一个白色小方块删掉
-                    draw_8_16_block(console_window, border + key_cursor_x * 8, current_line_y, COL8_000000);
-                    current_line_y += 16;
-                    if (current_line_y > textbox_y1 - 16) {
+                    draw_8_16_block(console_window, border + textBox.key_cursor_x * 8, textBox.current_line_y,
+                                    COL8_000000);
+                    textBox.current_line_y += 16;
+                    if (textBox.current_line_y > textBox.textbox_y1 - 16) {
                         // 意味着需要滚动了
                         short x, y;
                         char color;
-                        for (y = textbox_y0; y < textbox_y1 - 16; ++y) {
-                            for (x = textbox_x0; x < textbox_x1; ++x) {
+                        for (y = textBox.textbox_y0; y < textBox.textbox_y1 - 16; ++y) {
+                            for (x = textBox.textbox_x0; x < textBox.textbox_x1; ++x) {
                                 color = get_pixel_color(console_window, x, y + 16);
                                 set_pixel_color(console_window, x, y, color);
                             }
                         }
-                        current_line_y = textbox_y1 - 16;
+                        textBox.current_line_y = textBox.textbox_y1 - 16;
                     }
-                    key_cursor_x = 0;
-                    need_redraw = true;
-                    needNewLine = true;
+                    textBox.key_cursor_x = 0;
+                    textBox.need_redraw = true;
+                    textBox.needNewLine = true;
                 }
                 // input < 0x54 是为了只接收按下的字符，不接受松开的字符
                 if ((input < 0x54) && (KeyTableWithoutShift[input] != 0)) {
                     if (shift_key_down) {
-                        buf[key_cursor_x] = KeyTableWithShift[input];
+                        buf[textBox.key_cursor_x] = KeyTableWithShift[input];
                     } else {
-                        buf[key_cursor_x] = KeyTableWithoutShift[input];
+                        buf[textBox.key_cursor_x] = KeyTableWithoutShift[input];
                     }
-                    ++key_cursor_x;
+                    ++textBox.key_cursor_x;
                     // 最多打印十个字符
-                    if (key_cursor_x > max_char_count_of_line) {
-                        key_cursor_x = max_char_count_of_line;
+                    if (textBox.key_cursor_x > textBox.max_char_count_of_line) {
+                        textBox.key_cursor_x = textBox.max_char_count_of_line;
                     }
-                    need_redraw = true;
+                    textBox.need_redraw = true;
                 }
-                if (need_redraw) {
+                if (textBox.need_redraw) {
                     // 只刷新一行
-                    box_fill8(console_window->buffer, console_window->width, textbox_x0, current_line_y, textbox_x1,
-                              current_line_y + 16, COL8_000000);
-                    if (needNewLine) {
-                        print_str(console_window->buffer, console_window->width, textbox_x0, current_line_y, "hello",
+                    box_fill8(console_window->buffer, console_window->width, textBox.textbox_x0, textBox.current_line_y,
+                              textBox.textbox_x1,
+                              textBox.current_line_y + 16, COL8_000000);
+                    if (textBox.needNewLine) {
+                        print_str(console_window->buffer, console_window->width, textBox.textbox_x0,
+                                  textBox.current_line_y,
+                                  "hello",
                                   COLOR_WHITE);
-                        current_line_y += 16;
-                        if (current_line_y > textbox_y1 - 16) {
+                        textBox.current_line_y += 16;
+                        if (textBox.current_line_y > textBox.textbox_y1 - 16) {
                             // 意味着需要滚动了
                             short x, y;
                             char color;
-                            for (y = textbox_y0; y < textbox_y1 - 16; ++y) {
-                                for (x = textbox_x0; x < textbox_x1; ++x) {
+                            for (y = textBox.textbox_y0; y < textBox.textbox_y1 - 16; ++y) {
+                                for (x = textBox.textbox_x0; x < textBox.textbox_x1; ++x) {
                                     color = get_pixel_color(console_window, x, y + 16);
                                     set_pixel_color(console_window, x, y, color);
                                 }
                             }
-                            current_line_y = textbox_y1 - 16;
-                            box_fill8(console_window->buffer, console_window->width, textbox_x0, current_line_y,
-                                      textbox_x1, current_line_y + 16, COL8_000000);
+                            textBox.current_line_y = textBox.textbox_y1 - 16;
+                            box_fill8(console_window->buffer, console_window->width, textBox.textbox_x0,
+                                      textBox.current_line_y,
+                                      textBox.textbox_x1, textBox.current_line_y + 16, COL8_000000);
                         }
-                        needNewLine = false;
+                        textBox.needNewLine = false;
                     }
-                    buf[key_cursor_x] = '\0';
-                    draw_8_16_block(console_window, border + key_cursor_x * 8, current_line_y, COLOR_WHITE);
-                    print_str(console_window->buffer, console_window->width, textbox_x0, current_line_y, buf,
+                    buf[textBox.key_cursor_x] = '\0';
+                    draw_8_16_block(console_window, border + textBox.key_cursor_x * 8, textBox.current_line_y,
+                                    COLOR_WHITE);
+                    print_str(console_window->buffer, console_window->width, textBox.textbox_x0, textBox.current_line_y,
+                              buf,
                               COLOR_WHITE);
                     refresh_sheet(console_window);
-                    need_redraw = false;
+                    textBox.need_redraw = false;
                 }
             }
         } else {
