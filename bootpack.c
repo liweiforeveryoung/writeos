@@ -87,19 +87,21 @@ struct TextBox {
     short textbox_y0;
     short textbox_x1;
     short textbox_y1;
-    bool need_redraw; // 是否需要重绘
-    bool needNewLine;
     short key_cursor_x;   // 当前键盘光标位置
     short max_char_count_of_line;   // 每行的最大输入字符
     short current_line_y; // 当前输入的行的 y 坐标
     char *line_buffer;      // 行缓冲区
 };
 
+void handle_redraw(struct TextBox *textBox);
+
 // 处理 enter 键
 void handle_enter(struct TextBox *textBox) {
+    // enter 的時候必須 flush 一次
+    handle_redraw(textBox);
     // 将当前行的最后一个白色小方块删掉
     draw_8_16_block(textBox->sheet, textBox->textbox_x0 + textBox->key_cursor_x * 8, textBox->current_line_y,
-                    COL8_000000);
+                    COLOR_BLACK);
     textBox->current_line_y += 16;
     if (textBox->current_line_y > textBox->textbox_y1 - 16) {
         // 意味着需要滚动了
@@ -114,8 +116,6 @@ void handle_enter(struct TextBox *textBox) {
         textBox->current_line_y = textBox->textbox_y1 - 16;
     }
     textBox->key_cursor_x = 0;
-    textBox->need_redraw = true;
-    textBox->needNewLine = true;
 }
 
 // 处理 backspace 键盘
@@ -124,7 +124,7 @@ void handle_backspace(struct TextBox *textBox) {
     if (textBox->key_cursor_x < 0) {
         textBox->key_cursor_x = 0;
     }
-    textBox->need_redraw = true;
+    handle_redraw(textBox);
 }
 
 // 处理新的字符输入
@@ -135,28 +135,29 @@ void handle_new_char_come(struct TextBox *textBox, char newChar) {
     if (textBox->key_cursor_x > textBox->max_char_count_of_line) {
         textBox->key_cursor_x = textBox->max_char_count_of_line;
     }
-    textBox->need_redraw = true;
 }
 
 // 更新一行字符串
 void handle_new_line(struct TextBox *textBox, char *line) {
+    int i;
+    for (i = 0; line[i] != '\0'; i++) {
+        handle_new_char_come(textBox, line[i]);
+    }
+    handle_enter(textBox);
 }
 
 // 重新绘制
 void handle_redraw(struct TextBox *textBox) {
-    if (textBox->need_redraw) {
-        // 只刷新一行
-        box_fill8(textBox->sheet->buffer, textBox->sheet->width, textBox->textbox_x0, textBox->current_line_y,
-                  textBox->textbox_x1,
-                  textBox->current_line_y + 16, COL8_000000);
-        textBox->line_buffer[textBox->key_cursor_x] = '\0';
-        draw_8_16_block(textBox->sheet, textBox->textbox_x0 + textBox->key_cursor_x * 8, textBox->current_line_y,
-                        COLOR_WHITE);
-        print_str(textBox->sheet->buffer, textBox->sheet->width, textBox->textbox_x0, textBox->current_line_y,
-                  textBox->line_buffer, COLOR_WHITE);
-        refresh_sheet(textBox->sheet);
-        textBox->need_redraw = false;
-    }
+    // 只刷新一行
+    box_fill8(textBox->sheet->buffer, textBox->sheet->width, textBox->textbox_x0, textBox->current_line_y,
+              textBox->textbox_x1,
+              textBox->current_line_y + 16, COL8_000000);
+    textBox->line_buffer[textBox->key_cursor_x] = '\0';
+    print_str(textBox->sheet->buffer, textBox->sheet->width, textBox->textbox_x0, textBox->current_line_y,
+              textBox->line_buffer, COLOR_WHITE);
+    draw_8_16_block(textBox->sheet, textBox->textbox_x0 + textBox->key_cursor_x * 8, textBox->current_line_y,
+                    COLOR_WHITE);
+    refresh_sheet(textBox->sheet);
 }
 
 struct TextBox *newTextBox(struct Sheet *console_window, short x0, short y0, short x1, short y1) {
@@ -175,9 +176,7 @@ struct TextBox *newTextBox(struct Sheet *console_window, short x0, short y0, sho
         textBox->line_buffer[i] = '\0';
     }
     textBox->key_cursor_x = 0;   // 当前键盘光标位置
-    textBox->need_redraw = false;
     textBox->current_line_y = textBox->textbox_y0;
-    textBox->needNewLine = false;
     make_textbox8(console_window, textBox->textbox_x0, textBox->textbox_y0, textBox->textbox_x1, textBox->textbox_y1,
                   COL8_000000);
     refresh_sheet(console_window);
@@ -221,13 +220,8 @@ void console_task() {
                 if (input == 0x1c) {
                     // enter 键
                     handle_enter(textBox);
-                    const char *line = "hello";
-                    int i;
-                    for (i = 0; line[i] != '\0'; i++) {
-                        handle_new_char_come(textBox, line[i]);
-                    }
+                    handle_new_line(textBox, "hello world");
                     handle_redraw(textBox);
-                    handle_enter(textBox);
                 }
                 // input < 0x54 是为了只接收按下的字符，不接受松开的字符
                 if ((input < 0x54) && (KeyTableWithoutShift[input] != 0)) {
@@ -236,8 +230,8 @@ void console_task() {
                     } else {
                         handle_new_char_come(textBox, KeyTableWithoutShift[input]);
                     }
+                    handle_redraw(textBox);
                 }
-                handle_redraw(textBox);
             }
         } else {
             // 如果 buffer 内没有数据 就继续睡觉
