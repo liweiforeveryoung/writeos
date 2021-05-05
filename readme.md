@@ -1135,6 +1135,8 @@ void callback(){
 
 ##### 第十八天  dir 命令
 
+###### FILEINFO 结构体
+
 见前面的内存分布图：
 
 ```
@@ -1182,5 +1184,32 @@ size:文件的大小
 ```
 0x4200 - 0x2600 = 0x1c00 = 7168
 7168 / 32 = 224
+```
+
+##### 第十九天 应用程序
+
+根据 `clustno` 获得文件的真实存储地址
+
+```c
+struct FILEINFO {
+    unsigned char name[8], ext[3], type;
+    char reserve[10];
+    unsigned short time, date, clustno;
+    unsigned int size;
+};
+```
+
+单单看 `clustno` 这个字符
+
+| 文件名       | raw clustno | clustno | 存储地址 |
+| ------------ | ----------- | ------- | -------- |
+| HARIBOTE.SYS | 02 00       | 0x0002  | 0x004200 |
+| IPL10.NAS    | 39 00       | 0x0039  | 0x00b000 |
+| MAKE.BAT     | 3F 00       | 0x003f  | 0x00bc00 |
+
+ culstno每增加1，磁盘映像中的位置就增加0x200个字节，即 512 字节，恰好是一个扇区的大小。
+
+```
+磁盘映像中的地址 = clustno * 512 + 0x003e
 ```
 
