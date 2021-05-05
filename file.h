@@ -4,6 +4,10 @@
 
 #ifndef WRITEOS_FILE_H
 #define WRITEOS_FILE_H
+
+#include <stdio.h>  // for sprintf
+#include "global.h"
+
 struct FileInfo {
     unsigned char name[8], ext[3], type;
     char reserve[10];
@@ -25,5 +29,8 @@ enum FileType {
     NormalFile = 0x20 // 普通文件
 };
 
-struct FileInfo *BaseFileInfoAddress = (struct FileInfo *) (ADR_DISKIMG + 0x002600);
+// 将文件的信息输入到 buffer 中，返回该文件是否存在
+bool FormatFileInfoToBuffer(struct FileInfo *file, char *buffer);
+
+extern struct FileInfo *BaseFileInfoAddress;
 #endif //WRITEOS_FILE_H
