@@ -40,4 +40,7 @@ char *GetFileAddress(struct FileInfo *file);
 
 extern struct FileInfo *BaseFileInfoAddress;
 
+// 是否是最后一个文件
+bool IsLastFile(struct FileInfo *file);
+
 #endif //WRITEOS_FILE_H

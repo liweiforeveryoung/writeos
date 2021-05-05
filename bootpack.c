@@ -115,9 +115,11 @@ void console_task() {
                                 break;
                             }
                         }
-                    } else if (strEqual(textBox->line_buffer, "cat")) {
+                    } else if (strNEqual(textBox->line_buffer, "cat", 3)) {
                         handle_enter(textBox);
-                        char *fileName = "MAKE.BAT";
+                        // 寻找空格的位置
+                        int blankIndex = findIndex(textBox->line_buffer, ' ');
+                        char *fileName = textBox->line_buffer + blankIndex + 1;
                         struct FileInfo *file = FindFileByName(fileName);
                         if (file == nullptr) {
                             handle_new_line(textBox, "file is not exist");
