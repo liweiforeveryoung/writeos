@@ -3,6 +3,7 @@
 //
 
 #include "file.h"
+#include "string.h"
 
 bool FormatFileInfoToBuffer(struct FileInfo *file, char *buffer) {
     if (file->name[0] == Empty || file->name[0] == Deleted) {
@@ -25,11 +26,36 @@ bool FormatFileInfoToBuffer(struct FileInfo *file, char *buffer) {
 
 struct FileInfo *BaseFileInfoAddress = (struct FileInfo *) (ADR_DISKIMG + 0x002600);
 
+static bool NameIsMatch(struct FileInfo *file, char *name) {
+    int dotIndex = findIndex(name, '.');
+    if (dotIndex <= 0) {
+        return false;
+    }
+    if (!strNEqual(file->name, name, dotIndex - 1)) {
+        return false;
+    }
+    return strNEqual(file->ext, name + dotIndex + 1, 3);
+}
+
 struct FileInfo *FindFileByName(char *fileName) {
-    // 写死，返回 make.bat
-    return BaseFileInfoAddress + 2;
+    struct FileInfo *file = BaseFileInfoAddress;
+    while (!IsLastFile(file)) {
+        if (NameIsMatch(file, fileName)) {
+            return file;
+        }
+        file++;
+    }
+    return nullptr;
 }
 
 char *GetFileAddress(struct FileInfo *file) {
     return (char *) (file->clustno * 512 + 0x003e00 + ADR_DISKIMG);
+}
+
+// 是否是最后一个文件
+bool IsLastFile(struct FileInfo *file) {
+    if (file->name[0] == Empty || file->name[0] == Deleted) {
+        return true;
+    }
+    return false;
 }
