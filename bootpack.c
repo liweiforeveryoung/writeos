@@ -87,11 +87,11 @@ struct TextBox {
     short textbox_y0;
     short textbox_x1;
     short textbox_y1;
-    bool need_redraw;
+    bool need_redraw; // 是否需要重绘
     bool needNewLine;
     short key_cursor_x;   // 当前键盘光标位置
     short max_char_count_of_line;   // 每行的最大输入字符
-    short current_line_y;
+    short current_line_y; // 当前输入的行的 y 坐标
     char *line_buffer;      // 行缓冲区
 };
 
@@ -178,6 +178,31 @@ void handle_redraw(struct TextBox *textBox) {
     }
 }
 
+struct TextBox *newTextBox(struct Sheet *console_window, short x0, short y0, short x1, short y1) {
+    struct TextBox *textBox = (struct TextBox *) memory_alloc(global_memory_manager, sizeof(struct TextBox));
+    textBox->sheet = console_window;
+    textBox->textbox_x0 = x0;
+    textBox->textbox_y0 = y0;
+    textBox->textbox_x1 = x1;
+    textBox->textbox_y1 = y1;
+    // (textbox_x1 - textbox_x0) / 8 - 1 因为最后有一个白色小方块，所以要 -1
+    textBox->max_char_count_of_line = (x1 - x0) / 8 - 1;
+    textBox->line_buffer = (char *) memory_alloc(global_memory_manager,
+                                                 sizeof(char) * (textBox->max_char_count_of_line + 1));
+    int i;
+    for (i = 0; i <= textBox->max_char_count_of_line; ++i) {
+        textBox->line_buffer[i] = '\0';
+    }
+    textBox->key_cursor_x = 0;   // 当前键盘光标位置
+    textBox->need_redraw = false;
+    textBox->current_line_y = textBox->textbox_y0;
+    textBox->needNewLine = false;
+    make_textbox8(console_window, textBox->textbox_x0, textBox->textbox_y0, textBox->textbox_x1, textBox->textbox_y1,
+                  COL8_000000);
+    refresh_sheet(console_window);
+    return textBox;
+}
+
 // 控制台
 void console_task() {
     struct SignalBuffer *signal_buffer = order_signal();
@@ -186,30 +211,11 @@ void console_task() {
     const short title_bar_height = 32;   // 标题栏高度
     const short border = 16;   // 边框宽度
     bool exist = false;
-    struct TextBox textBox;
     struct Sheet *console_window = create_window(100, 100, window_weight, window_height, "console");
-    textBox.sheet = console_window;
-    textBox.textbox_x0 = border;
-    textBox.textbox_y0 = title_bar_height;
-    textBox.textbox_x1 = window_weight - border;
-    textBox.textbox_y1 = window_height - border;
-    make_textbox8(console_window, textBox.textbox_x0, textBox.textbox_y0, textBox.textbox_x1, textBox.textbox_y1,
-                  COL8_000000);
-    refresh_sheet(console_window);
-    // (textbox_x1 - textbox_x0) / 8 - 1 因为最后有一个白色小方块，所以要 -1 , = 35
-    textBox.max_char_count_of_line = (textBox.textbox_x1 - textBox.textbox_x0) / 8 - 1;
-    textBox.line_buffer = (char *) memory_alloc(global_memory_manager,
-                                                sizeof(char) * (textBox.max_char_count_of_line + 1));
-    int i;
-    for (i = 0; i <= textBox.max_char_count_of_line; ++i) {
-        textBox.line_buffer[i] = '\0';
-    }
-    unsigned char input, type;
-    textBox.key_cursor_x = 0;   // 当前键盘光标位置
+    struct TextBox *textBox = newTextBox(console_window, border, title_bar_height, window_weight - border,
+                                         window_height - border);
     bool shift_key_down = false;    // 是否按下了 shift 键
-    textBox.need_redraw = false;    // 是否需要重绘
-    textBox.current_line_y = textBox.textbox_y0;     // 当前输入的行的 y 坐标
-    textBox.needNewLine = false;
+    unsigned char input, type;
     while (1) {
         io_cli();       // 禁用中断
         exist = read_data_from_buffer(signal_buffer, &input, &type);
@@ -229,21 +235,21 @@ void console_task() {
                 }
                 if (input == 0x0e) {
                     // 退格键
-                    handle_backspace(&textBox);
+                    handle_backspace(textBox);
                 }
                 if (input == 0x1c) {
                     // enter 键
-                    handle_enter(&textBox);
+                    handle_enter(textBox);
                 }
                 // input < 0x54 是为了只接收按下的字符，不接受松开的字符
                 if ((input < 0x54) && (KeyTableWithoutShift[input] != 0)) {
                     if (shift_key_down) {
-                        handle_new_char_come(&textBox, KeyTableWithShift[input]);
+                        handle_new_char_come(textBox, KeyTableWithShift[input]);
                     } else {
-                        handle_new_char_come(&textBox, KeyTableWithoutShift[input]);
+                        handle_new_char_come(textBox, KeyTableWithoutShift[input]);
                     }
                 }
-                handle_redraw(&textBox);
+                handle_redraw(textBox);
             }
         } else {
             // 如果 buffer 内没有数据 就继续睡觉
