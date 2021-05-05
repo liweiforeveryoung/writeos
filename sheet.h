@@ -58,4 +58,7 @@ bool move_up_sheet(struct Sheet *sheet);
 // 将图层往下移动一层
 bool move_down_sheet(struct Sheet *sheet);
 
+// 在指定位置处绘制一个 8 * 16 的小方块
+void draw_8_16_block(struct Sheet *sheet, short x0, short y0, unsigned char color);
+
 #endif //WRITEOS_SHEET_H
