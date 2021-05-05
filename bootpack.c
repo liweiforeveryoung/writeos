@@ -108,24 +108,13 @@ void console_task() {
                         char s[100] = {0};
                         int x, y;
                         for (x = 0; x < 224; x++) {
-                            if (BaseFileInfoAddress[x].name[0] == Empty) {
+                            if (FormatFileInfoToBuffer(BaseFileInfoAddress + x, s)) {
+                                handle_new_line(textBox, s);
+                                handle_redraw(textBox);
+                            } else {
                                 break;
                             }
-                            if (BaseFileInfoAddress[x].name[0] != Deleted) {
-                                if ((BaseFileInfoAddress[x].type & (Dir | NotFile)) == 0) {
-                                    sprintf(s, "filename.ext   %7d", BaseFileInfoAddress[x].size);
-                                    for (y = 0; y < 8; y++) {
-                                        s[y] = BaseFileInfoAddress[x].name[y];
-                                    }
-                                    s[9] = BaseFileInfoAddress[x].ext[0];
-                                    s[10] = BaseFileInfoAddress[x].ext[1];
-                                    s[11] = BaseFileInfoAddress[x].ext[2];
-                                    handle_new_line(textBox, s);
-                                    handle_redraw(textBox);
-                                }
-                            }
                         }
-
                     } else {
                         handle_enter(textBox);
                         handle_redraw(textBox);
