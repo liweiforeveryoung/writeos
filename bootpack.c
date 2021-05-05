@@ -13,6 +13,7 @@
 #include "memorymanager.h"
 #include "task.h"
 #include "textbox.h"
+#include "string.h"
 
 unsigned int mem_test(unsigned int start, unsigned int end);
 
@@ -108,17 +109,7 @@ void console_task() {
                 }
                 if (input == 0x1c) {
                     // enter 键
-                    char *line_buffer = textBox->line_buffer;
-                    char *dir = "dir";
-
-                    bool isDir = true;
-                    int i;
-                    for (i = 0; i < 3; ++i) {
-                        if (line_buffer[i] != dir[i]) {
-                            isDir = false;
-                        }
-                    }
-                    if (isDir) {
+                    if (strEqual(textBox->line_buffer, "dir")) {
                         handle_enter(textBox);
                         char s[100] = {0};
                         int x, y;
