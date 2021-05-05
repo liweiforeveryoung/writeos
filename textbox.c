@@ -44,7 +44,7 @@ void handle_new_char_come(struct TextBox *textBox, char newChar) {
     ++textBox->key_cursor_x;
     // 最多打印十个字符
     if (textBox->key_cursor_x > textBox->max_char_count_of_line) {
-        textBox->key_cursor_x = textBox->max_char_count_of_line;
+        handle_enter(textBox);
     }
 }
 
