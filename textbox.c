@@ -6,6 +6,8 @@
 #include "memorymanager.h"
 #include "textbox.h"
 
+struct TextBox *console_address;
+
 // 处理 enter 键
 void handle_enter(struct TextBox *textBox) {
     // enter 的時候必須 flush 一次
@@ -62,6 +64,10 @@ void print_char_in_console_and_redraw(struct TextBox *textBox, char ch) {
     handle_new_char_come(textBox, ch);
     handle_enter(textBox);
     handle_redraw(textBox);
+}
+
+void print_char_in_console_and_redraw_wrapper(char ch) {
+    print_char_in_console_and_redraw(console_address, ch);
 }
 
 // 重新绘制
