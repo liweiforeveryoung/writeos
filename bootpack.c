@@ -77,6 +77,8 @@ void console_task() {
     struct Sheet *console_window = create_window(100, 100, window_weight, window_height, "console");
     struct TextBox *textBox = newTextBox(console_window, border, title_bar_height, window_weight - border,
                                          window_height - border);
+    *(struct TextBox **) (0x0fec) = textBox;
+    // console_address = textBox;
     bool shift_key_down = false;    // 是否按下了 shift 键
     unsigned char input, type;
     while (1) {

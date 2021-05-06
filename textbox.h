@@ -36,4 +36,9 @@ struct TextBox *newTextBox(struct Sheet *sheet, short x0, short y0, short x1, sh
 // 打印一个字符，之后回车，之后刷新
 void print_char_in_console_and_redraw(struct TextBox *textBox, char ch);
 
+// 对 print_char_in_console_and_redraw 的包装
+void print_char_in_console_and_redraw_wrapper(char ch);
+
+// 直接用一个全局变量来记录控制台的地址吧
+extern struct TextBox *console_address;
 #endif //WRITEOS_TEXTBOX_H

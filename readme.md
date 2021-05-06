@@ -1,5 +1,3 @@
-
-
 #### 一些魔数
 
 ###### 0x7c00
@@ -1264,3 +1262,109 @@ byte2 = 0xef
 以此类推，我们一直读取到clustno = 57（0x39），57号扇区后面应该读哪里了呢？参照对应的FAT记录，居然是FFF。也就是说，57号之后已经没有数据了，即这里就是文件的末尾。一般来说，如果遇到FF8～FFF的值，就代表文件数据到此结束。
 
 只要其中一个地方损坏，之后的部分就会全部混乱。因此，微软公司将FAT看作是最重要的磁盘信息，为此在磁盘中存放了2份FAT。第1份FAT位于0x000200～0x0013ff，第2份位于0x001400～0x0025ff。其中第2份是备份FAT，内容和第1份完全相同。
+
+##### 第二十天 api
+
+###### 应用程序调用系统的函数
+
+操作系统中有这样一个函数：
+
+```c
+// 在控制台中打印一个字符，之后回车，之后刷新
+void print_char_in_console_and_redraw(struct TextBox *textBox, char ch);
+```
+
+现在应用程序想要调用这个函数，往控制台中输出一个字符，该怎么做？
+
+应用程序需要知道三个条件：
+
+1. `print_char_in_console_and_redraw`这个函数的地址。
+2. `textBox`的值，即控制台的地址。
+3. `ch`的值，即应用程序想要输出的字符。
+
+应用程序怎样得到这三个条件？
+
+1. `print_char_in_console_and_redraw`这个函数的地址。
+
+   这个函数的地址在 `bootpack.map` 中可以找到：
+
+   ```
+   0x00001CB8 : _print_char_in_console_and_redraw
+   ```
+
+2. `textBox`的值。
+
+   扑街，因为 textBox 这个变量是在操作系统内部生成的，所以外部引用没办法得到他的地址。
+
+3. `ch`的值
+
+   应用程序想要打印哪个字符，还不是由它自己说了算？
+
+因为没办法知道，textBox 的值，所以应用程序没办法直接调用 `print_char_in_console_and_redraw`这个函数。
+
+该怎么解决一个问题呢？
+
+1. 我的解法
+
+   其实可以对这个函数`print_char_in_console_and_redraw`包装一下。将包装后的函数明明为`print_char_in_console_and_redraw_wrapper`。这个 wrapper 只需要一个参数就能执行，它的实现类似这样：
+
+   ```c
+   // 在控制台中打印一个字符，之后回车，之后刷新
+   void print_char_in_console_and_redraw_wrapper(char ch){
+       struct TextBox *textBox = getTextBoxAddress();
+       print_char_in_console_and_redraw(textBox,ch);
+   }
+   ```
+
+   这样外部的应用程序只需要知道 `print_char_in_console_and_redraw_wrapper`和地址，并自己提供一个 char，就可以启动这个函数了。
+
+   > 可是怎么传参又成了一个问题，刚刚试了一下。
+   >
+   > ```asm
+   > PUSH 'A'
+   > CALL 2*8:0x1CDC  ; print_char_in_console_and_redraw_wrapper 的地址
+   > ADD	ESP,4
+   > ```
+   >
+   > 发现有问题，算了还是用书上的方法吧。
+
+2. 书上的解法
+
+   用汇编实现了一个函数
+
+   ```assembly
+   ; naskfunc.nas
+   ; void print_char_in_console_and_redraw(struct TextBox *textBox, char ch);
+   _asm_print_char_in_console_and_redraw:
+   		AND		EAX,0xff ; 因为我们只需要 AX 就够了（最后的十六个 bit）
+   		PUSH	EAX      ; 推入第二个参数 ch
+   		PUSH	DWORD [0x0fec]	; 推入第一个参数 textBox 的地址
+   		CALL	_print_char_in_console_and_redraw
+   		ADD		ESP,8	 ; 将栈寄存器还原
+   		RETF    ; far return 注意
+   ```
+
+   调用者把想要打印的字符赋值给`AX`寄存器。之后调用该函数即可。其中`0x0fec`是存储 <u>控制台窗口地址</u> 的地址。
+
+   ```c
+   // bootpack.c
+   struct TextBox *textBox = newTextBox(console_window, border, title_bar_height, window_weight - border,window_height - border);
+   *(struct TextBox **) (0x0fec) = textBox;
+   ```
+
+   应用程序的代码：
+
+   ```assembly
+   ; hlt.nas
+   MOV	AL,'A'
+   CALL 2*8:0xA01  ; _asm_print_char_in_console_and_redraw 的地址
+   ```
+
+   ###### 注意：
+
+   1. 因为操作系统在2号段上，而应用程序在 1003 号段上，所以不能简单用 call，而应该用跨段的 call，即 call 的时候加上段号。
+   2. 因为调用时使用的是 call far，所以在 `_asm_print_char_in_console_and_redraw` 用的 `retf` 返回。
+
+   
+
+
