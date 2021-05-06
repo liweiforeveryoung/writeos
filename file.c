@@ -32,7 +32,7 @@ static bool NameIsMatch(struct FileInfo *file, char *name) {
     if (dotIndex <= 0) {
         return false;
     }
-    if (!strNEqual(file->name, name, dotIndex - 1)) {
+    if (!strNEqual(file->name, name, dotIndex)) {
         return false;
     }
     return strNEqual(file->ext, name + dotIndex + 1, 3);
