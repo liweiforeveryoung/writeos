@@ -56,4 +56,6 @@ void jmp_far(int eip, int cs);
 
 void call_far(int eip, int cs);
 
+void asm_print_char_in_console_and_redraw();
+
 #endif //WRITEOS_NASKFUNC_H
