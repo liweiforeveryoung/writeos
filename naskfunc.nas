@@ -16,7 +16,7 @@ GLOBAL _load_cr0,_store_cr0
 GLOBAL _asm_int_handler20,_asm_int_handler21,_asm_int_handler2c,_asm_int_handler27
 GLOBAL _asm_memory_is_valid
 GLOBAL _load_tr
-GLOBAL _jmp_far
+GLOBAL _jmp_far,_call_far
 GLOBAL _asm_print_char_in_console_and_redraw
 EXTERN _int_handler20,_int_handler21,_int_handler2c,_int_handler27
 ; _print_char_in_console_and_redraw 在 task.h 中
@@ -207,6 +207,10 @@ _taskswitch4:	; void taskswitch4(void);
 
 _jmp_far:       ; void jmp_far(int eip,int cs);
         JMP far [ESP+4]
+        RET
+
+_call_far:      ; void call_far(int eip,int cs);
+        call far [ESP+4]
         RET
 
 _asm_memory_is_valid:   ; bool asm_memory_is_valid(unsigned int *pMemory)

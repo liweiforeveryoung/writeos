@@ -52,6 +52,11 @@ void jmp_to_code_segment(int codeNo) {
     jmp_far(0, (code_segment_begin_index + codeNo) * 8);
 }
 
+// 调用代码段，codeNo 是代码段的 id
+void call_code_segment(int codeNo) {
+    call_far(0, (code_segment_begin_index + codeNo) * 8);
+}
+
 void set_tss_desc(int tssNo, int tssAddr) {
     struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_GDT;
     set_segment_desc(gdt + tssNo, 103, tssAddr, AR_TSS32);
