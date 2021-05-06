@@ -39,4 +39,6 @@ void set_code_desc(int codeNo, int addr, unsigned int limit);
 // 跳到代码段，codeNo 是代码段的 id
 void jmp_to_code_segment(int codeNo);
 
+// 调用代码段，codeNo 是代码段的 id
+void call_code_segment(int codeNo);
 #endif //WRITEOS_DSCTBL_H

@@ -52,6 +52,8 @@ bool asm_memory_is_valid(unsigned int *pMemory);
 
 void load_tr(int tr);
 
-void jmp_far(int eip,int cs);
+void jmp_far(int eip, int cs);
+
+void call_far(int eip, int cs);
 
 #endif //WRITEOS_NASKFUNC_H

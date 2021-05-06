@@ -1360,10 +1360,39 @@ void print_char_in_console_and_redraw(struct TextBox *textBox, char ch);
    CALL 2*8:0xA01  ; _asm_print_char_in_console_and_redraw 的地址
    ```
 
-   ###### 注意：
+   **注意：**
 
    1. 因为操作系统在2号段上，而应用程序在 1003 号段上，所以不能简单用 call，而应该用跨段的 call，即 call 的时候加上段号。
    2. 因为调用时使用的是 call far，所以在 `_asm_print_char_in_console_and_redraw` 用的 `retf` 返回。
+
+###### 操作系统执行应用程序并返回
+
+之前我们执行应用程序的方式设这样的：
+
+```c
+jmp_to_code_segment(0);
+```
+
+直接 `jmp` 到应用程序的代码段地址上去了，并且一去不复返~
+
+如果想执行完程序之后返回的话，就必须使用`call`和`ret`这个combo了。
+
+此外，由于应用程序和操作系统不在一个段上，因此需要用到`call far`和`retf`。
+
+`call far` 的实现与 `jmp far` 基本一致
+
+```assembly
+; naskfunc.nas
+_jmp_far:       ; void jmp_far(int eip,int cs);
+        JMP far [ESP+4]
+        RET
+
+_call_far:      ; void call_far(int eip,int cs);
+        call far [ESP+4]
+        RET
+```
+
+   
 
    
 
