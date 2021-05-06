@@ -1,7 +1,6 @@
 //
 // Created by liwei1 on 2021/3/27.
 //
-#include <stdio.h>
 #include "bootpack.h"
 #include "signalbuffer.h"
 #include "naskfunc.h"
@@ -130,6 +129,15 @@ void console_task() {
                             memory_free(global_memory_manager, (unsigned int) buffer, 4096);
                         }
                         handle_redraw(textBox);
+                    } else if (strEqual(textBox->line_buffer, "hlt")) {
+                        handle_enter(textBox);
+                        handle_redraw(textBox);
+                        struct FileInfo *file = FindFileByName("HLT.HRB");
+                        char *buffer = (char *) memory_alloc(global_memory_manager, 4096);
+                        ReadFileIntoBuffer(file, buffer, 4096);
+                        set_code_desc(0, (int) buffer, file->size - 1);
+                        jmp_to_code_segment(0);
+                        memory_free(global_memory_manager, (unsigned int) buffer, 4096);
                     } else {
                         handle_enter(textBox);
                         handle_redraw(textBox);
