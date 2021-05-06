@@ -248,4 +248,4 @@ _asm_print_char_in_console_and_redraw:
 		PUSH	DWORD [0x0fec]	; 推入第一个参数 textBox 的地址
 		CALL	_print_char_in_console_and_redraw
 		ADD		ESP,8	 ; 将栈寄存器还原
-		RETF    ; far return
+		IRETD       ; 使用INT指令来调用的时候会被视作中断来处理，用 RETF 是无法返回的，需要使用 IRETD 指令

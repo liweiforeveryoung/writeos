@@ -87,4 +87,6 @@ void init_idt() {
     set_interrupt_desc(idt + 0x21, (int) asm_int_handler21, 2 * 8, AR_INTGATE32);
     set_interrupt_desc(idt + 0x2c, (int) asm_int_handler2c, 2 * 8, AR_INTGATE32);
     set_interrupt_desc(idt + 0x27, (int) asm_int_handler27, 2 * 8, AR_INTGATE32);
+    // 并非一定要取 0x40, 因为 0x30～0xff 都是空闲的，只要在这个范围内任意一个都可以
+    set_interrupt_desc(idt + 0x40, (int) asm_print_char_in_console_and_redraw, 2 * 8, AR_INTGATE32);
 }
