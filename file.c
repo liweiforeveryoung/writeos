@@ -4,6 +4,7 @@
 
 #include "file.h"
 #include "string.h"
+#include "memorymanager.h"
 
 bool FormatFileInfoToBuffer(struct FileInfo *file, char *buffer) {
     if (file->name[0] == Empty || file->name[0] == Deleted) {
@@ -48,8 +49,12 @@ struct FileInfo *FindFileByName(char *fileName) {
     return nullptr;
 }
 
+char *calFileAddressByClustNo(unsigned short clustNo) {
+    return (char *) (clustNo * 512 + 0x003e00 + ADR_DISKIMG);
+}
+
 char *GetFileAddress(struct FileInfo *file) {
-    return (char *) (file->clustno * 512 + 0x003e00 + ADR_DISKIMG);
+    return calFileAddressByClustNo(file->clustno);
 }
 
 // 是否是最后一个文件
@@ -58,4 +63,46 @@ bool IsLastFile(struct FileInfo *file) {
         return true;
     }
     return false;
+}
+
+unsigned char *FatTable;
+
+// 初始化 fat table
+void initFatTable() {
+    // 因为只有 2880个扇区
+    FatTable = (unsigned char *) memory_alloc(global_memory_manager, 2880);
+    unsigned char *rawBitAddress = (unsigned char *) (ADR_DISKIMG + 0x000200);
+    int i, j;
+    for (i = 0, j = 0; i < 2880; i += 2, j += 3) {
+        FatTable[i] = ((rawBitAddress[j + 1] << 8) & 0xf00) | rawBitAddress[j];
+        FatTable[i + 1] = (rawBitAddress[j + 2] << 4) | (rawBitAddress[j + 1] >> 4);
+    }
+}
+
+// 將 file 读取到 buffer 内
+bool ReadFileIntoBuffer(struct FileInfo *file, char *buffer, int bufferSize) {
+    int fileSize = file->size;
+    if (bufferSize <= fileSize) {
+        return false;
+    }
+    int i;
+    for (i = 0; i < bufferSize; ++i) {
+        buffer[i] = '\0';
+    }
+    char *begin;
+    unsigned short curClusterNo = file->clustno;
+    while (true) {
+        begin = calFileAddressByClustNo(curClusterNo);
+        int j;
+        for (j = 0; j < fileSize; ++j) {
+            buffer[j] = begin[j];
+        }
+        if (fileSize <= 512) {
+            break;
+        }
+        fileSize -= 512;
+        buffer += 512;
+        curClusterNo = FatTable[curClusterNo];
+    }
+    return true;
 }
