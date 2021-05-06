@@ -124,13 +124,10 @@ void console_task() {
                         if (file == nullptr) {
                             handle_new_line(textBox, "file is not exist");
                         } else {
-                            char *beginAddress = GetFileAddress(file);
-                            char *endAddress = beginAddress + file->size;
-                            char *p;
-                            for (p = beginAddress; p < endAddress; ++p) {
-                                handle_new_char_come(textBox, *p);
-                            }
-                            handle_enter(textBox);
+                            char *buffer = (char *) memory_alloc(global_memory_manager, 4096);
+                            ReadFileIntoBuffer(file, buffer, 4096);
+                            handle_new_line(textBox, buffer);
+                            memory_free(global_memory_manager, (unsigned int) buffer, 4096);
                         }
                         handle_redraw(textBox);
                     } else {
@@ -183,7 +180,7 @@ void HariMain(void) {
     initSignalBufferController();
     AddTask((int) console_task, 2);
     init_sheet_control();
-
+    initFatTable();
     init_mouse_sheet(global_sheet_control);
     init_keyboard();
     enable_mouse();

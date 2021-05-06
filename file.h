@@ -43,4 +43,10 @@ extern struct FileInfo *BaseFileInfoAddress;
 // 是否是最后一个文件
 bool IsLastFile(struct FileInfo *file);
 
+// 将文件内容读取到缓冲区，成功则返回 true，失败则返回 false
+bool ReadFileIntoBuffer(struct FileInfo *file, char *buffer, int bufferSize);
+
+// 初始化 fat table
+void initFatTable();
+
 #endif //WRITEOS_FILE_H
