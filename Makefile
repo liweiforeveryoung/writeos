@@ -46,15 +46,21 @@ $(OSNAME).sys : asmhead.bin bootpack.hrb Makefile
 $(IPLNAME).bin : $(IPLNAME).nas Makefile
 	$(NASK) $(IPLNAME).nas $(IPLNAME).bin $(IPLNAME).lst
 
-$(OSNAME).img : $(IPLNAME).bin $(OSNAME).sys hlt.hrb Makefile
+$(OSNAME).img : $(IPLNAME).bin $(OSNAME).sys hlt.hrb a.hrb Makefile
 	$(EDIMG) imgin:../z_tools/fdimg0at.tek   \
 		wbinimg src:$(IPLNAME).bin len:512 from:0 to:0 \
 		copy from:$(OSNAME).sys to:@: \
 		copy from:ipl10.nas to:@: \
         copy from:make.bat to:@: \
         copy from:hlt.hrb to:@: \
+        copy from:a.hrb to:@: \
 		imgout:$(OSNAME).img
 
+a.bim : a.obj a_nask.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:a.bim map:a.map a.obj a_nask.obj
+
+a.hrb : a.bim Makefile
+	$(BIM2HRB) a.bim a.hrb 0
 
 hlt.hrb : hlt.nas Makefile
 	$(NASK) hlt.nas hlt.hrb hlt.lst
@@ -86,16 +92,15 @@ clean :
 	-$(DEL) *.lst
 	-$(DEL) *.gas
 	-$(DEL) *.obj
-	-$(DEL) bootpack.map
-	-$(DEL) bootpack.bim
-	-$(DEL) bootpack.hrb
+	-$(DEL) *.map
+	-$(DEL) *.bim
+	-$(DEL) *.hrb
 	-$(DEL) haribote.sys
 
 #仅仅保留源文件
 src_only :
 	$(MAKE) clean
 	-$(DEL) $(OSNAME).img
-	-$(DEL) *.hrb
 
 run_and_clean:
 	$(MAKE) run
