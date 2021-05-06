@@ -1,7 +1,5 @@
 #include "naskfunc.h"
 #include "dsctbl.h"
-#include "memorymanager.h"
-#include "task.h"
 
 void set_segment_desc(struct SEGMENT_DESCRIPTOR *sd, unsigned int limit, int base, int ar) {
     if (limit > 0xfffff) {
@@ -37,6 +35,21 @@ void init_gdt() {
     set_segment_desc(gdt + 1, 0xffffffff, 0x00000000, AR_DATA32_RW);
     set_segment_desc(gdt + 2, LIMIT_BOTPAK, ADR_BOTPAK, AR_CODE32_ER);
     load_gdtr(LIMIT_GDT, (int) gdt);
+}
+
+// 代码段的起始编号，这个起始编号可以是任意值（当然这个任意值不能超过段的大小），只要不影响到别人就好（例如之前的 tss 信息）
+const int code_segment_begin_index = 1003;
+
+// 代码段
+void set_code_desc(int codeNo, int addr, unsigned int limit) {
+    // gdt 的地址
+    struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_GDT;
+    set_segment_desc(gdt + code_segment_begin_index + codeNo, limit, addr, AR_CODE32_ER);
+}
+
+// 跳到代码段，codeNo 是代码段的 id
+void jmp_to_code_segment(int codeNo) {
+    jmp_far(0, (code_segment_begin_index + codeNo) * 8);
 }
 
 void set_tss_desc(int tssNo, int tssAddr) {

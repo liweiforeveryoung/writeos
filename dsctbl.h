@@ -31,8 +31,12 @@ void init_gdt();
 // 初始化中断向量表  interrupt descriptor table
 void init_idt();
 
-void init_tss(int task_b_main_addr);
-
 void set_tss_desc(int tssNo, int tssAddr);
+
+// 代码段
+void set_code_desc(int codeNo, int addr, unsigned int limit);
+
+// 跳到代码段，codeNo 是代码段的 id
+void jmp_to_code_segment(int codeNo);
 
 #endif //WRITEOS_DSCTBL_H
