@@ -138,6 +138,9 @@ void console_task() {
                         set_code_desc(0, (int) buffer, file->size - 1);
                         jmp_to_code_segment(0);
                         memory_free(global_memory_manager, (unsigned int) buffer, 4096);
+                    } else if (strEqual(textBox->line_buffer, "print")) {
+                        handle_enter(textBox);
+                        print_char_in_console_and_redraw(textBox, 'a');
                     } else {
                         handle_enter(textBox);
                         handle_redraw(textBox);

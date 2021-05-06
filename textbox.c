@@ -57,6 +57,13 @@ void handle_new_line(struct TextBox *textBox, char *line) {
     handle_enter(textBox);
 }
 
+// 打印一个字符，之后回车，之后刷新
+void print_char_in_console_and_redraw(struct TextBox *textBox, char ch) {
+    handle_new_char_come(textBox, ch);
+    handle_enter(textBox);
+    handle_redraw(textBox);
+}
+
 // 重新绘制
 void handle_redraw(struct TextBox *textBox) {
     // 只刷新一行

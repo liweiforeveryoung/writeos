@@ -33,4 +33,7 @@ void handle_new_line(struct TextBox *textBox, char *line);
 
 struct TextBox *newTextBox(struct Sheet *sheet, short x0, short y0, short x1, short y1);
 
+// 打印一个字符，之后回车，之后刷新
+void print_char_in_console_and_redraw(struct TextBox *textBox, char ch);
+
 #endif //WRITEOS_TEXTBOX_H
