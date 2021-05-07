@@ -153,8 +153,8 @@ void console_task() {
                         buffer[3] = 0x00;
                         buffer[4] = 0x00;
                         buffer[5] = 0xcb;
-                        set_code_desc(1, (int) buffer, file->size - 1);
-                        call_code_segment(1);
+                        set_code_desc(0, (int) buffer, file->size - 1);
+                        call_code_segment(0);
                         memory_free(global_memory_manager, (unsigned int) buffer, 4096);
                     } else {
                         handle_enter(textBox);
