@@ -157,7 +157,7 @@ void console_task() {
                         // 数据段
                         char *dataSegment = (char *) memory_alloc(global_memory_manager, 64 * 1024);
                         set_data_desc(0, (int) dataSegment, 64 * 1024 - 1);
-                        call_code_segment(0);
+                        start_app(0, 1003 * 8, 64 * 1024, 1004 * 8);
                         memory_free(global_memory_manager, (unsigned int) buffer, 4096);
                         memory_free(global_memory_manager, (unsigned int) dataSegment, 64 * 1024);
                     } else if (strEqual(textBox->line_buffer, "crack")) {
@@ -177,7 +177,7 @@ void console_task() {
                         // 数据段
                         char *dataSegment = (char *) memory_alloc(global_memory_manager, 64 * 1024);
                         set_data_desc(0, (int) dataSegment, 64 * 1024 - 1);
-                        call_code_segment(0);
+                        start_app(0, 1003 * 8, 64 * 1024, 1004 * 8);
                         memory_free(global_memory_manager, (unsigned int) buffer, 4096);
                         memory_free(global_memory_manager, (unsigned int) dataSegment, 64 * 1024);
                     } else {

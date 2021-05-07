@@ -18,6 +18,7 @@ GLOBAL _asm_memory_is_valid
 GLOBAL _load_tr
 GLOBAL _jmp_far,_call_far
 GLOBAL _asm_print_char_in_console_and_redraw
+GLOBAL _start_app
 EXTERN _int_handler20,_int_handler21,_int_handler2c,_int_handler27
 ; _print_char_in_console_and_redraw 在 task.h 中
 EXTERN _print_char_in_console_and_redraw
@@ -249,3 +250,8 @@ _asm_print_char_in_console_and_redraw:
 		CALL	_print_char_in_console_and_redraw
 		ADD		ESP,8	 ; 将栈寄存器还原
 		IRETD       ; 使用INT指令来调用的时候会被视作中断来处理，用 RETF 是无法返回的，需要使用 IRETD 指令
+
+; 启动程序
+_start_app:     ; void start_app(int eip, int cs, int esp, int ds);
+    call far [ESP+4]    ; 目前和 call_far 函数是相同的
+    RET

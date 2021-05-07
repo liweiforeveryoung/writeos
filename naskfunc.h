@@ -58,4 +58,7 @@ void call_far(int eip, int cs);
 
 void asm_print_char_in_console_and_redraw();
 
+// 启动程序
+void start_app(int eip, int cs, int esp, int ds);
+
 #endif //WRITEOS_NASKFUNC_H
