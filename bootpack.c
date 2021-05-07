@@ -170,9 +170,13 @@ void console_task() {
                         buffer[4] = 0x00;
                         buffer[5] = 0xcb;
                         set_code_desc(0, (int) buffer, file->size - 1);
+                        // 代码段
+                        char *dataSegment = (char *) memory_alloc(global_memory_manager, 64 * 1024);
+                        set_data_desc(0, (int) dataSegment, 64 * 1024 - 1);
                         call_code_segment(0);
                         memory_free(global_memory_manager, (unsigned int) buffer, 4096);
-                    }else {
+                        memory_free(global_memory_manager, (unsigned int) dataSegment, 64 * 1024);
+                    } else {
                         handle_enter(textBox);
                         handle_redraw(textBox);
                     }

@@ -47,6 +47,13 @@ void set_code_desc(int codeNo, int addr, unsigned int limit) {
     set_segment_desc(gdt + code_segment_begin_index + codeNo, limit, addr, AR_CODE32_ER);
 }
 
+// 数据段
+void set_data_desc(int codeNo, int addr, unsigned int limit) {
+    // gdt 的地址
+    struct SEGMENT_DESCRIPTOR *gdt = (struct SEGMENT_DESCRIPTOR *) ADR_GDT;
+    set_segment_desc(gdt + code_segment_begin_index + codeNo + 1, limit, addr, AR_DATA32_RW);
+}
+
 // 跳到代码段，codeNo 是代码段的 id
 void jmp_to_code_segment(int codeNo) {
     jmp_far(0, (code_segment_begin_index + codeNo) * 8);

@@ -36,9 +36,13 @@ void set_tss_desc(int tssNo, int tssAddr);
 // 代码段
 void set_code_desc(int codeNo, int addr, unsigned int limit);
 
+// 数据段
+void set_data_desc(int codeNo, int addr, unsigned int limit);
+
 // 跳到代码段，codeNo 是代码段的 id
 void jmp_to_code_segment(int codeNo);
 
 // 调用代码段，codeNo 是代码段的 id
 void call_code_segment(int codeNo);
+
 #endif //WRITEOS_DSCTBL_H
