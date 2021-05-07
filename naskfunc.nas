@@ -253,5 +253,7 @@ _asm_print_char_in_console_and_redraw:
 
 ; 启动程序
 _start_app:     ; void start_app(int eip, int cs, int esp, int ds);
-    call far [ESP+4]    ; 目前和 call_far 函数是相同的
+    PUSHAD      ; 4 * 8，8个寄存器，每个寄存器 4 个字节
+    call far [ESP+36]    ; 目前和 call_far 函数是相同的
+    POPAD       ; 还原寄存器的值
     RET
