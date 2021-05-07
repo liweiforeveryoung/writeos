@@ -46,7 +46,7 @@ $(OSNAME).sys : asmhead.bin bootpack.hrb Makefile
 $(IPLNAME).bin : $(IPLNAME).nas Makefile
 	$(NASK) $(IPLNAME).nas $(IPLNAME).bin $(IPLNAME).lst
 
-$(OSNAME).img : $(IPLNAME).bin $(OSNAME).sys hlt.hrb a.hrb Makefile
+$(OSNAME).img : $(IPLNAME).bin $(OSNAME).sys hlt.hrb a.hrb crack.hrb Makefile
 	$(EDIMG) imgin:../z_tools/fdimg0at.tek   \
 		wbinimg src:$(IPLNAME).bin len:512 from:0 to:0 \
 		copy from:$(OSNAME).sys to:@: \
@@ -54,6 +54,7 @@ $(OSNAME).img : $(IPLNAME).bin $(OSNAME).sys hlt.hrb a.hrb Makefile
         copy from:make.bat to:@: \
         copy from:hlt.hrb to:@: \
         copy from:a.hrb to:@: \
+        copy from:crack.hrb to:@: \
 		imgout:$(OSNAME).img
 
 a.bim : a.obj a_nask.obj Makefile
@@ -61,6 +62,12 @@ a.bim : a.obj a_nask.obj Makefile
 
 a.hrb : a.bim Makefile
 	$(BIM2HRB) a.bim a.hrb 0
+
+crack.bim : crack.obj Makefile
+	$(OBJ2BIM) @$(RULEFILE) out:crack.bim map:crack.map crack.obj
+
+crack.hrb : crack.bim Makefile
+	$(BIM2HRB) crack.bim crack.hrb 0
 
 hlt.hrb : hlt.nas Makefile
 	$(NASK) hlt.nas hlt.hrb hlt.lst

@@ -156,7 +156,23 @@ void console_task() {
                         set_code_desc(0, (int) buffer, file->size - 1);
                         call_code_segment(0);
                         memory_free(global_memory_manager, (unsigned int) buffer, 4096);
-                    } else {
+                    } else if (strEqual(textBox->line_buffer, "crack")) {
+                        handle_enter(textBox);
+                        handle_redraw(textBox);
+                        struct FileInfo *file = FindFileByName("CRACK.HRB");
+                        char *buffer = (char *) memory_alloc(global_memory_manager, 4096);
+                        ReadFileIntoBuffer(file, buffer, 4096);
+                        // 要替换前六个字节
+                        buffer[0] = 0xe8;
+                        buffer[1] = 0x16;
+                        buffer[2] = 0x00;
+                        buffer[3] = 0x00;
+                        buffer[4] = 0x00;
+                        buffer[5] = 0xcb;
+                        set_code_desc(0, (int) buffer, file->size - 1);
+                        call_code_segment(0);
+                        memory_free(global_memory_manager, (unsigned int) buffer, 4096);
+                    }else {
                         handle_enter(textBox);
                         handle_redraw(textBox);
                     }
