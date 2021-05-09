@@ -9,6 +9,5 @@ GLOBAL _print_char
 
 _print_char:	; void print_char(char c);
     MOV	AL,[ESP+4]
-;    MOV	AL,'B'
     INT	0x40
     RET

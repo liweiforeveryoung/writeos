@@ -1394,7 +1394,47 @@ _call_far:      ; void call_far(int eip,int cs);
 
 ##### 第二十一天 保护操作系统
 
-###### 用C语言编写应用程序 todo
+###### 用C语言编写应用程序 
+
+用 c 语言编写应用程序和之前用汇编写应用程序其实差不多，反正最终生成的都是二进制啦。
+
+```c
+// a.c
+void print_char(char c);
+
+void HariMain(void) {
+    print_char('b');
+    return;
+}
+```
+
+```assembly
+; a_nask.nas
+[FORMAT "WCOFF"]				; 生成对象文件的模式
+[INSTRSET "i486p"]				; 使用486兼容指令
+[BITS 32]						; 生成32位模式机器语
+[FILE "a_nask.nas"]				; 源文件名信息
+
+GLOBAL _print_char
+
+[SECTION .text]
+
+_print_char:	; void print_char(char c);
+    MOV	AL,[ESP+4]
+    INT	0x40
+    RET
+```
+
+把他们链接，编译成二进制然后打包进镜像即可。有可能坑的是必须修改二进制的前六个字节，程序才能正常执行。
+
+```c
+buffer[0] = 0xe8;
+buffer[1] = 0x16;
+buffer[2] = 0x00;
+buffer[3] = 0x00;
+buffer[4] = 0x00;
+buffer[5] = 0xcb;
+```
 
 ###### 对数据段和栈段的理解
 
