@@ -1392,8 +1392,386 @@ _call_far:      ; void call_far(int eip,int cs);
         RET
 ```
 
-   
+##### 第二十一天 保护操作系统
 
-   
+###### 用C语言编写应用程序 todo
+
+###### 对数据段和栈段的理解
+
+**数据段 data segment**
+
+```assembly
+mov ax,[1234]
+```
+
+将地址为 1234 的数据赋值给 ax 寄存器。
+
+但是这个 1234 是一个绝对的内存地址么？
+
+No，它只是当前程序所在数据段上的一个决定地址（可以把它理解成一个相对地址）
+
+实际上这个 1234 访问的是程序当前所在的数据段上的 1234 地址。
+
+ds 是一个寄存器，data segment，他记录了当前的数据段的值。
+
+所以实际上这段代码等于 
+
+```assembly
+mov ax,ds:1234
+```
+
+同理还有这么一段 c 代码
+
+```c
+char c = *(char*)0x1234
+```
+
+他实际上访问的也是程序当前所在的数据段的 1234 号地址。
+
+看看下面这段汇编：
+
+```assembly
+mov ax,1
+mov ds,ax
+mov bx,[1234]
+
+mov ax,2
+mov ds,ax
+mov cx,[1234]
+```
+
+虽然都访问地址都是 1234，但是最终 bx 和 cx 的值是不同的，因为 ds 改变了，所以实际上访问的是不同的地址了。
+
+**栈段 stack segment**
+
+```assembly
+MOV sp,4567
+PUSH ax
+```
+
+首先设置了 sp 的值，值将 ax 寄存器的值推入栈内，那么到底存入了哪里。
+
+因为将 sp 设置成了 4567，因为 ax 的值被存入到 4568 和 4569 这两个字节里。
+
+但是这两个字节是绝对地址么？
+
+No，依旧是一个相对地址。
+
+与前面不同之处在于，这次是相对于栈段的地址。
+
+程序怎么知道自己的栈段？
+
+看 ss 寄存器，它记录了程序当前的栈段。
+
+所以实际上 `PUSH ax`
+
+约等于
+
+```assembly
+MOV ss:sp,ax
+ADD sp,2
+```
+
+看这么一段代码
+
+```assembly
+MOV ax,1
+MOV ss,ax
+
+PUSH bx
+POP bx
+```
+
+执行这段代码后，在 POP 之后，bx 变成了原来的值。
+
+```assembly
+mov ax,1
+MOV ss,ax
+
+PUSH bx
+
+MOV ax,2
+mov ss,ax
+
+POP bx
+```
+
+POP 之后，bx 的值并没有变成原来的值，虽然 sp 没变，但是因为 ss 已经变了，POP 时访问的实际内存和 PUSH 时访问的实际内存已经不同了。
+
+###### 保护操作系统
+
+```c
+// crack1.c
+void HariMain(void){
+    *((char *) 0x00102600) = 0;    
+    return;
+}
+```
+
+目前操作系统没有对内存进行保护，是无法阻止应用程序写内存写东西的。
+
+**如何阻止？**
+
+它所干的坏事，其实就是擅自访问了本该由操作系统来管理的内存空间。我们需要为应用程序提供专用的内存空间。
+
+要做到这一点，我们可以创建应用程序专用的数据段，<u>并在应用程序运行期间，将DS和SS指向该段地址</u>。
+
+DS 即 data segment，数据段。
+
+SS 即 stack segment，栈段。
+
+```
+操作系统用代码段......2 * 8
+操作系统用数据段......1 * 8
+应用程序用代码段......1003 * 8
+应用程序用数据段......1004 * 8
+(3 * 8～1002 * 8为TSS所使用的段)
+```
+
+首先梳理一下我们之前是怎样执行 hlt 这个应用程序的 ，这是 hlt 的代码
+
+```assembly
+[BITS 32]
+MOV	AL,'A'
+INT 0x40  ; 通过触发 0x40 号中断来间接调用 _asm_print_char_in_console_and_redraw
+RETF
+```
+
+虽然此时这个程序的作用并不是 hlt 了，但是我还是叫他 hlt 吧。
+
+这是 bootpack.c 中执行 hlt 的代码
+
+```c
+struct FileInfo *file = FindFileByName("HLT.HRB");
+char *buffer = (char *) memory_alloc(global_memory_manager, 4096);
+ReadFileIntoBuffer(file, buffer, 4096);
+set_segment_desc(1003, 4096 - 1, buffer, AR_CODE32_ER);
+call_far(0, 1003 * 8);
+```
+
+```
+操作系统把 HLT.HRB 读取中 buffer 内
+操作系统把 buffer 设置为 1003 段
+操作系统执行 1003 号段的程序
+应用程序执行结束后返回到操作系统
+```
+
+对于应用程序
+
+```
+应用程序给 AL 寄存器赋值
+应用程序触发 40 号中断，间接调用操作系统的 _asm_print_char_in_console_and_redraw 函数
+操作系统的 _asm_print_char_in_console_and_redraw 函数 调用 操作系统的 print_char_in_console_and_redraw 函数
+_asm_print_char_in_console_and_redraw 返回后，重新回到应用程序
+```
+
+回城时序图大概是这样的：
+
+```mermaid
+sequenceDiagram
+	participant 操作系统
+	participant 应用程序
+	操作系统 ->> 操作系统 : set_segment_desc
+	操作系统 ->> 应用程序 : call_far
+	应用程序 ->> 操作系统 : asm_print_char_in_console_and_redraw
+    操作系统 ->> 操作系统 : print_char_in_console_and_redraw
+    操作系统 ->> 应用程序 : return
+    应用程序 ->> 操作系统 : return
+```
+
+再来看看这段程序
+```c
+// crack1.c
+void HariMain(void){
+    *((char *) 0x00102600) = 0;    
+    return;
+}
+```
+
+```c
+set_segment_desc(1003, 4096 - 1, buffer, AR_CODE32_ER);
+call_far(0, 1003 * 8);
+```
+
+通过 call_far 来执行应用程序时，实际上是将 cs 设置成了 1003，ip 设置成了 0。
+
+但是 ds 和 ss 却并没有变，因此应用程序在执行过程中，使用的依旧是操作系统的 ss 和 ds。
+
+这就导致，执行这句代码时
+
+```c
+*((char *) 0x00102600) = 0;
+```
+
+由于 ds 是操作系统的 ds，因此它修改了操作系统的数据段中的内容，从而破坏了操作系统的结构！
+
+所以只要为应用程序准备一个单独的数据段和栈段，并修改 ds 和 ss，之后再去执行应用程序就 ok 了。
+
+道理就类似于班上有个小朋友很调皮，经常在班上捣蛋，影响了其他小朋友学习，然后老师就把他调到了一间空教室，这样不管他再调皮，也没办法影响别人了。
+
+这间空教室就是我们为应用程序准备的 ds 和 ss。
+
+还有一点要注意的是：在应用程序执行完毕后，需要将 ds 和 ss 恢复到操作系统原来的 ds 和 ss，毕竟操作系统还是要正常运转的，如果操作系统运行过程中访问的是应用程序的 ds 和 ss，那世界就有乱套了。
+
+```
+应用程序用代码段......1003 * 8
+应用程序用数据段......1004 * 8
+```
+
+我们将 1003 号段作为应用程序专用的代码段，将 1004 号段作为应用程序专用的数据段/栈段。
+
+```c
+char *codeSegment = (char *) memory_alloc(global_memory_manager, 4096);
+set_segment_desc(gdt + 1003, limit, addr, AR_CODE32_ER);
+char *dataSegment = (char *) memory_alloc(global_memory_manager, 64 * 1024);
+set_segment_desc(gdt + 1004, limit, addr, AR_DATA32_RW);
+```
+
+之后就是执行应用程序了，之前我们是直接使用 call_far 跳到 1003 号段去执行应用程序了。
+
+```c
+call_far(0, 1003);
+```
+
+```assembly
+_call_far:      ; void call_far(int eip,int cs);
+        call far [ESP+4]
+        RET
+```
+
+但是现在不行了，因为我们在执行应用程序之前，需要将 ds 和 ss 设置为我们所准备的段上。
+
+因此创建了一个 start_app 函数。
+
+```c
+void start_app(int eip, int cs, int esp, int ds);
+```
+
+参数 ds 用来指定 ds 寄存器和 cs 寄存器的值。
+
+参数 esp 用来指定 esp 寄存器的值，esp 寄存器是用来指定栈顶位置的。
+
+参数 cs 用来指定 cs 寄存器的值。
+
+参数 eip 用来指定 eip 寄存器的值。
+
+cs 寄存器和 eip 寄存器决定系统下一条指令的地址。
+
+start_app 的作用是，将 ds 和 ss 和 esp 设置为我们所指定的值后，之后执行 eip 和 cs 处的应用程序，待应用程序执行完毕后，再将 ds，ss 和 esp 恢复为原来的值，之后返回。
+
+```c
+char *codeSegment = (char *) memory_alloc(global_memory_manager, 4096);
+set_segment_desc(gdt + 1003, 4096 - 1, addr, AR_CODE32_ER);
+char *dataSegment = (char *) memory_alloc(global_memory_manager, 64 * 1024);
+set_segment_desc(gdt + 1004, 64 * 1024 - 1, addr, AR_DATA32_RW);
+start_app(0, 1003 * 8, 64 * 1024, 1004 * 8);
+```
+
+因为 start_app 需要操作寄存器，所以肯定只能用汇编来实现。
+
+```assembly
+_start_app:     ; void start_app(int eip, int cs, int esp, int ds);
+    PUSHAD      ; 4 * 8，8个寄存器，每个寄存器 4 个字节
+
+    MOV EAX,[ESP+36]    ; EAX = eip
+    MOV ECX,[ESP+40]    ; ECX = cs
+    MOV EDX,[ESP+44]    ; EDX = esp
+    MOV EBX,[ESP+48]    ; EBX = ds
+
+    CLI                 ; 禁止中断
+
+    MOV [0xfe4],ESP     ; 操作系统用ESP
+
+    MOV DS,BX           ; DS = ds
+    MOV SS,BX           ; SS = ds
+    MOV ESP,EDX         ; ESP = esp
+
+    PUSH ECX            ; PUSH cs       for far call（设置好 SS 和 SP 之后，这个地方其实已经是往函数的栈PUSH了，而不是系统的栈）
+    PUSH EAX            ; PUSH eip      for far call（设置好 SS 和 SP 之后，这个地方其实已经是往函数的栈PUSH了，而不是系统的栈）
+    CALL FAR [ESP]      ; 调用应用程序
+
+    MOV AX,1*8         ; 操作系统的 SS，DS
+    MOV DS,AX
+    MOV SS,AX
+
+    MOV ESP,[0xfe4]     ; 还原 ESP
+
+    STI                 ; 恢复中断
+
+    POPAD       ; 还原寄存器的值
+    RET
+```
+
+ok，现在应用程序在我们为他准备的空教室去活动了。但是应用程序在执行过程中，会触发 0x40 号中断，进入到 `_asm_print_char_in_console_and_redraw` 中，但此次ss和ds依旧是应用程序的 ss 和 ss，之后`_asm_print_char_in_console_and_redraw` 会调用操作系统`_print_char_in_console_and_redraw`来进行输出，因此在调用 `_print_char_in_console_and_redraw`前，需要将 ss 和 ds 设置为操作系统的 ss 和 ds。
+
+```assembly
+_asm_print_char_in_console_and_redraw:
+		PUSHAD           ; 记录所有 32 位寄存器的值
+
+		AND		EAX,0xff ; ax = ch，因为我们只需要 AX 就够了（最后的十六个 bit）
+
+		MOV     BX,DS    ; BX = SS，记录应用程序所在的数据段
+		MOV     CX,SS    ; CX = SS, 记录应用程序所在的栈段
+
+		MOV     DX,1*8   ; 操作系统所在的段 调整 ES,DS
+		MOV     SS,DX    ; SS = 1 * 8
+		MOV     DS,DX    ; DS = 1 * 8
+
+		MOV     EDX,ESP   ; EDX = ESP，记录应用程序的栈顶
+
+		MOV     ESP,[0xfe4] ; 将 ESP 调整到操作系统的 ESP, 因为前面已经将 DS 调整到操作系统所在的段了，这个地方的 0xfe4 实际上是操作系统数据段上的 0xfe4
+
+        PUSH    BX       ; 这三个 PUSH 主要是防止 这三个寄存器在 _print_char_in_console_and_redraw 函数内被修改了
+        PUSH    CX       ; 这三个 PUSH 主要是防止 这三个寄存器在 _print_char_in_console_and_redraw 函数内被修改了
+        PUSH    EDX      ; 这三个 PUSH 主要是防止 这三个寄存器在 _print_char_in_console_and_redraw 函数内被修改了
+
+        PUSH	EAX                     ; 推入第二个参数 ch
+        PUSH	DWORD [0x0fec]	        ; 推入第一个参数 textBox 的地址
+		CALL	_print_char_in_console_and_redraw
+		ADD     ESP,8
+
+		POP     EDX       ; 还原 BX,CX,EDX
+		POP     CX        ; 还原 BX,CX,EDX
+		POP     BX        ; 还原 BX,CX,EDX
+
+		MOV     DS,BX     ; 还原应用程序的数据段
+		MOV     SS,CX     ; 还原应用程序的栈段
+		MOV     ESP,EDX   ; 还原 ESP
+
+		POPAD           ; 还原所有 32 位寄存器的值
+		IRETD           ; 使用INT指令来调用的时候会被视作中断来处理，用 RETF 是无法返回的，需要使用 IRETD 指令
+```
+
+还有一点要注意的是，在执行应用程序的过程后，也是有可能发生硬件中断的。
+
+```assembly
+; 定时器相关
+_asm_int_handler20:
+    PUSH    ES
+    PUSH    DS
+    PUSHAD          ; 上面三个 push 会把寄存器的值都存起来，包括 EAX，ESP
+
+    MOV     EAX,ESP ;  这两句代码是用来干啥的，没看懂
+    PUSH    EAX     ;  这两句代码是用来干啥的，没看懂
+
+    MOV     AX,SS   ;   将 DS 和 ES 调整到与 SS 相等
+    MOV     DS,AX   ;   将 DS 和 ES 调整到与 SS 相等
+    MOV     ES,AX   ;   将 DS 和 ES 调整到与 SS 相等
+    CALL    _int_handler20
+
+    POP     EAX
+
+    POPAD           ; 下面三个 pop 会把寄存器的值都弹出去
+    POP     DS
+    POP     ES
+    IRETD
+```
+
+这是我们之前处理定时器中断的代码，当定时器中断发生时，会进入到 `_asm_int_handler20`内，`_asm_int_handler20`会调用操作系统`_int_handler20`，这里就有可能发生一个问题。
+
+如果中断是在执行应用程序的过程中发生的，那么在 `CALL    _int_handler20`时，ss 和 ds 寄存器的值可能是应用程序的栈段和数据段，这样的话，调用 int_handler20 就会发生问题。
+
+所以需要在`CALL    _int_handler20`将ss 和 ds 寄存器设置为操作系统的值。（但我懒得做了）
+
 
 

@@ -244,16 +244,69 @@ _asm_memory_is_valid:   ; bool asm_memory_is_valid(unsigned int *pMemory)
 
 ; void print_char_in_console_and_redraw(struct TextBox *textBox, char ch);
 _asm_print_char_in_console_and_redraw:
-		AND		EAX,0xff ; 因为我们只需要 AX 就够了（最后的十六个 bit）
-		PUSH	EAX      ; 推入第二个参数 ch
-		PUSH	DWORD [0x0fec]	; 推入第一个参数 textBox 的地址
+		PUSHAD           ; 记录所有 32 位寄存器的值
+
+		AND		EAX,0xff ; ax = ch，因为我们只需要 AX 就够了（最后的十六个 bit）
+
+		MOV     BX,DS    ; BX = SS，记录应用程序所在的数据段
+		MOV     CX,SS    ; CX = SS, 记录应用程序所在的栈段
+
+		MOV     DX,1*8   ; 操作系统所在的段 调整 ES,DS
+		MOV     SS,DX    ; SS = 1 * 8
+		MOV     DS,DX    ; DS = 1 * 8
+
+		MOV     EDX,ESP   ; EDX = ESP，记录应用程序的栈顶
+
+		MOV     ESP,[0xfe4] ; 将 ESP 调整到操作系统的 ESP, 因为前面已经将 DS 调整到操作系统所在的段了，这个地方的 0xfe4 实际上是操作系统数据段上的 0xfe4
+
+        PUSH    BX       ; 这三个 PUSH 主要是防止 这三个寄存器在 _print_char_in_console_and_redraw 函数内被修改了
+        PUSH    CX       ; 这三个 PUSH 主要是防止 这三个寄存器在 _print_char_in_console_and_redraw 函数内被修改了
+        PUSH    EDX      ; 这三个 PUSH 主要是防止 这三个寄存器在 _print_char_in_console_and_redraw 函数内被修改了
+
+        PUSH	EAX                     ; 推入第二个参数 ch
+        PUSH	DWORD [0x0fec]	        ; 推入第一个参数 textBox 的地址
 		CALL	_print_char_in_console_and_redraw
-		ADD		ESP,8	 ; 将栈寄存器还原
-		IRETD       ; 使用INT指令来调用的时候会被视作中断来处理，用 RETF 是无法返回的，需要使用 IRETD 指令
+		ADD     ESP,8
+
+		POP     EDX       ; 还原 BX,CX,EDX
+		POP     CX        ; 还原 BX,CX,EDX
+		POP     BX        ; 还原 BX,CX,EDX
+
+		MOV     DS,BX     ; 还原应用程序的数据段
+		MOV     SS,CX     ; 还原应用程序的栈段
+		MOV     ESP,EDX   ; 还原 ESP
+
+		POPAD           ; 还原所有 32 位寄存器的值
+		IRETD           ; 使用INT指令来调用的时候会被视作中断来处理，用 RETF 是无法返回的，需要使用 IRETD 指令
 
 ; 启动程序
 _start_app:     ; void start_app(int eip, int cs, int esp, int ds);
     PUSHAD      ; 4 * 8，8个寄存器，每个寄存器 4 个字节
-    call far [ESP+36]    ; 目前和 call_far 函数是相同的
+
+    MOV EAX,[ESP+36]    ; EAX = eip
+    MOV ECX,[ESP+40]    ; ECX = cs
+    MOV EDX,[ESP+44]    ; EDX = esp
+    MOV EBX,[ESP+48]    ; EBX = ds
+
+    CLI                 ; 禁止中断
+
+    MOV [0xfe4],ESP     ; 操作系统用ESP
+
+    MOV DS,BX           ; DS = ds
+    MOV SS,BX           ; SS = ds
+    MOV ESP,EDX         ; ESP = esp
+
+    PUSH ECX            ; PUSH cs       for far call（设置好 SS 和 SP 之后，这个地方其实已经是往函数的栈PUSH了，而不是系统的栈）
+    PUSH EAX            ; PUSH eip      for far call（设置好 SS 和 SP 之后，这个地方其实已经是往函数的栈PUSH了，而不是系统的栈）
+    CALL FAR [ESP]      ; 调用应用程序
+
+    MOV AX,1*8         ; 操作系统的 SS，DS
+    MOV DS,AX
+    MOV SS,AX
+
+    MOV ESP,[0xfe4]     ; 还原 ESP
+
+    STI                 ; 恢复中断
+
     POPAD       ; 还原寄存器的值
     RET
